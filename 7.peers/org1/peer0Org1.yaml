@@ -132,6 +132,11 @@ spec:
 
         - name: couchdb
           image: hyperledger/fabric-couchdb:0.4.15
+          env:
+            - name: COUCHDB_USER
+              value: "admin"
+            - name: COUCHDB_PASSWORD
+              value: "Admin@123"
           resources:
             limits:
               memory: "300Mi"

@@ -14,17 +14,25 @@
 1. sudo apt update
 2. sudo apt install nfs-common
 3. sudo mkdir -p /mnt/nfs_clientshare
-4. sudo mount -t nfs 159.65.144.208:/mnt/nfs_share ./nfs_clientshare
+4. sudo mount -t nfs 64.227.130.179:/mnt/nfs_share ./nfs_clientshare
 5. ls -l /mnt/nfs_clientshare/
 
 ## NFS Client (MacOS)
 
 1. mkdir nfs_clientshare
-2. sudo mount -o nolocks -t nfs <IP>:/mnt/nfs_share ./nfs_clientshare
+2. sudo mount -o nolocks -t nfs 64.227.130.179:/mnt/nfs_share ./nfs_clientshare
 
 cd usr/share/nginx/html
 
 sudo cp -R prerequsite/* ../nfs_clientshare
 
 
-ssh root@159.65.144.208
+ssh root@64.227.130.179
+
+
+mAjed2377@a
+
+
+doctl kubernetes cluster kubeconfig save 51b02083-d832-4b06-a40e-3ced770409e7
+
+dop_v1_3f4f745fda492a632c61d195056efef17717d27b90c17ae3dd0a432714729377
