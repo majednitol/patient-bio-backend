@@ -25,7 +25,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: ../organizations/ordererOrganizations/example.com/msp
+        MSPDir: ../organizations/ordererOrganizations/rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -46,16 +46,16 @@ Organizations:
 
         OrdererEndpoints:
             - orderer:7050
-
-    - &Org1
+# l
+    - &Afrinic
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: Org1MSP
+        Name: AfrinicMSP
 
         # ID to load the MSP definition as
-        ID: Org1MSP
+        ID: AfrinicMSP
 
-        MSPDir: ../organizations/peerOrganizations/org1.example.com/msp
+        MSPDir: ../organizations/peerOrganizations/afrinic.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -63,34 +63,34 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org1MSP.member')"
+                Rule: "OR('AfrinicMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('Org1MSP.member')"
+                Rule: "OR('AfrinicMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('Org1MSP.admin')"
+                Rule: "OR('AfrinicMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('Org1MSP.peer')"
+                Rule: "OR('AfrinicMSP.peer')"
 
         # leave this flag set to true.
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-org1
+            - Host: peer0-afrinic
               Port: 7051
 
-    - &Org2
+    - &Apnic
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: Org2MSP
+        Name: ApnicMSP
 
         # ID to load the MSP definition as
-        ID: Org2MSP
+        ID: ApnicMSP
 
-        MSPDir: ../organizations/peerOrganizations/org2.example.com/msp
+        MSPDir: ../organizations/peerOrganizations/apnic.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -98,33 +98,33 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org2MSP.member')"
+                Rule: "OR('ApnicMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('Org2MSP.member')"
+                Rule: "OR('ApnicMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('Org2MSP.admin')"
+                Rule: "OR('ApnicMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('Org2MSP.peer')"
+                Rule: "OR('ApnicMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-org2
+            - Host: peer0-apnic
               Port: 9051
 
-    - &Org3
+    - &Arin
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: Org3MSP
+        Name: ArinMSP
 
         # ID to load the MSP definition as
-        ID: Org3MSP
+        ID: ArinMSP
 
-        MSPDir: ../organizations/peerOrganizations/org3.example.com/msp
+        MSPDir: ../organizations/peerOrganizations/arin.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -132,24 +132,123 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('Org3MSP.member')"
+                Rule: "OR('ArinMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('Org3MSP.member')"
+                Rule: "OR('ArinMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('Org3MSP.admin')"
+                Rule: "OR('ArinMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('Org3MSP.peer')"
+                Rule: "OR('ArinMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-org3
+            - Host: peer0-arin
               Port: 11051
+    - &Ripencc
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: RipenccMSP
 
+        # ID to load the MSP definition as
+        ID: RipenccMSP
+
+        MSPDir: ../organizations/peerOrganizations/ripencc.rono.com/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('RipenccMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('RipenccMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('RipenccMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('RipenccMSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-ripencc
+              Port: 12051
+    - &Lacnic
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: LacnicMSP
+
+        # ID to load the MSP definition as
+        ID: LacnicMSP
+
+        MSPDir: ../organizations/peerOrganizations/lacnic.rono.com/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('LacnicMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('LacnicMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('LacnicMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('LacnicMSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-lacnic
+              Port: 13051
+
+    - &Rono
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: RonoMSP
+
+        # ID to load the MSP definition as
+        ID: RonoMSP
+
+        MSPDir: ../organizations/peerOrganizations/rono.rono.com/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('RonoMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('RonoMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('RonoMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('RonoMSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-rono
+              Port: 14051
 
 ################################################################################
 #
@@ -308,8 +407,8 @@ Application: &ApplicationDefaults
             Type: ImplicitMeta
             Rule: "MAJORITY Endorsement"
         Endorsement:
-            Type: ImplicitMeta
-            Rule: "MAJORITY Endorsement"
+            Type: Signature
+            Rule: "OR('AfrinicMSP.peer', 'ApnicMSP.peer', 'ArinMSP.peer', 'RipenccMSP.peer', 'LacnicMSP.peer', 'RonoMSP.peer')"
 
     Capabilities:
         <<: *ApplicationCapabilities
@@ -342,41 +441,41 @@ Orderer: &OrdererDefaults
         Consenters:
         - Host: orderer
           Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+          ClientTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer.rono.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer.rono.com/tls/server.crt
         - Host: orderer2
           Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+          ClientTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer2.rono.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer2.rono.com/tls/server.crt
         - Host: orderer3
           Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/server.crt
+          ClientTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer3.rono.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer3.rono.com/tls/server.crt
         - Host: orderer4
           Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/server.crt
+          ClientTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer4.rono.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer4.rono.com/tls/server.crt
         - Host: orderer5
           Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer5.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer5.example.com/tls/server.crt
+          ClientTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer5.rono.com/tls/server.crt
+          ServerTLSCert: ../organizations/ordererOrganizations/rono.com/orderers/orderer5.rono.com/tls/server.crt
     # Batch Timeout: The amount of time to wait before creating a batch
-    BatchTimeout: 1.5s
+    BatchTimeout: 2s
 
     # Batch Size: Controls the number of messages batched into a block
     BatchSize:
 
         # Max Message Count: The maximum number of messages to permit in a batch
-        MaxMessageCount: 300
+        MaxMessageCount: 500
 
         # Absolute Max Bytes: The absolute maximum number of bytes allowed for
         # the serialized messages in a batch.
-        AbsoluteMaxBytes: 60 MB
+        AbsoluteMaxBytes: 10 MB
 
         # Preferred Max Bytes: The preferred maximum number of bytes allowed for
         # the serialized messages in a batch. A message larger than the preferred
         # max bytes will result in a batch larger than preferred max bytes.
-        PreferredMaxBytes: 10MB
+        PreferredMaxBytes: 2 MB
 
     # Organizations is the list of orgs which are defined as participants on
     # the orderer side of the network
@@ -454,18 +553,24 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *Org1
-                    - *Org2
-                    - *Org3
+                    - *Afrinic
+                    - *Apnic
+                    - *Arin
+                    - *Ripencc
+                    - *Lacnic
+                    - *Rono
     TwoOrgsChannel:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Org1
-                - *Org2
-                - *Org3
+                - *Afrinic
+                - *Apnic
+                - *Arin
+                - *Ripencc
+                - *Lacnic
+                - *Rono
             Capabilities:
                 <<: *ApplicationCapabilities
 
