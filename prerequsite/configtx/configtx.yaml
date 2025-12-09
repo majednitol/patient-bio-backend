@@ -47,15 +47,15 @@ Organizations:
         OrdererEndpoints:
             - orderer:7050
 # l
-    - &Afrinic
+    - &Patient
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: AfrinicMSP
+        Name: PatientMSP
 
         # ID to load the MSP definition as
-        ID: AfrinicMSP
+        ID: PatientMSP
 
-        MSPDir: ../organizations/peerOrganizations/afrinic.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/patient.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -63,34 +63,34 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('AfrinicMSP.member')"
+                Rule: "OR('PatientMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('AfrinicMSP.member')"
+                Rule: "OR('PatientMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('AfrinicMSP.admin')"
+                Rule: "OR('PatientMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('AfrinicMSP.peer')"
+                Rule: "OR('PatientMSP.peer')"
 
         # leave this flag set to true.
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-afrinic
+            - Host: peer0-patient
               Port: 7051
 
-    - &Apnic
+    - &Doctor
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: ApnicMSP
+        Name: DoctorMSP
 
         # ID to load the MSP definition as
-        ID: ApnicMSP
+        ID: DoctorMSP
 
-        MSPDir: ../organizations/peerOrganizations/apnic.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/doctor.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -98,33 +98,33 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ApnicMSP.member')"
+                Rule: "OR('DoctorMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('ApnicMSP.member')"
+                Rule: "OR('DoctorMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('ApnicMSP.admin')"
+                Rule: "OR('DoctorMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('ApnicMSP.peer')"
+                Rule: "OR('DoctorMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-apnic
+            - Host: peer0-doctor
               Port: 9051
 
-    - &Arin
+    - &Pathologist
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: ArinMSP
+        Name: PathologistMSP
 
         # ID to load the MSP definition as
-        ID: ArinMSP
+        ID: PathologistMSP
 
-        MSPDir: ../organizations/peerOrganizations/arin.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/pathologist.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -132,32 +132,32 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ArinMSP.member')"
+                Rule: "OR('PathologistMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('ArinMSP.member')"
+                Rule: "OR('PathologistMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('ArinMSP.admin')"
+                Rule: "OR('PathologistMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('ArinMSP.peer')"
+                Rule: "OR('PathologistMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-arin
+            - Host: peer0-pathologist
               Port: 11051
-    - &Ripencc
+    - &Pharmacy
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: RipenccMSP
+        Name: PharmacyMSP
 
         # ID to load the MSP definition as
-        ID: RipenccMSP
+        ID: PharmacyMSP
 
-        MSPDir: ../organizations/peerOrganizations/ripencc.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/pharmacy.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -165,32 +165,32 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('RipenccMSP.member')"
+                Rule: "OR('PharmacyMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('RipenccMSP.member')"
+                Rule: "OR('PharmacyMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('RipenccMSP.admin')"
+                Rule: "OR('PharmacyMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('RipenccMSP.peer')"
+                Rule: "OR('PharmacyMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-ripencc
+            - Host: peer0-pharmacy
               Port: 12051
-    - &Lacnic
+    - &Medlab
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: LacnicMSP
+        Name: MedlabMSP
 
         # ID to load the MSP definition as
-        ID: LacnicMSP
+        ID: MedlabMSP
 
-        MSPDir: ../organizations/peerOrganizations/lacnic.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/medlab.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -198,33 +198,33 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('LacnicMSP.member')"
+                Rule: "OR('MedlabMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('LacnicMSP.member')"
+                Rule: "OR('MedlabMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('LacnicMSP.admin')"
+                Rule: "OR('MedlabMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('LacnicMSP.peer')"
+                Rule: "OR('MedlabMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-lacnic
+            - Host: peer0-medlab
               Port: 13051
 
-    - &Rono
+    - &Admin
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: RonoMSP
+        Name: AdminMSP
 
         # ID to load the MSP definition as
-        ID: RonoMSP
+        ID: AdminMSP
 
-        MSPDir: ../organizations/peerOrganizations/rono.rono.com/msp
+        MSPDir: ../organizations/peerOrganizations/admin.rono.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -232,22 +232,22 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('RonoMSP.member')"
+                Rule: "OR('AdminMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('RonoMSP.member')"
+                Rule: "OR('AdminMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('RonoMSP.admin')"
+                Rule: "OR('AdminMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('RonoMSP.peer')"
+                Rule: "OR('AdminMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0-rono
+            - Host: peer0-admin
               Port: 14051
 
 ################################################################################
@@ -408,7 +408,7 @@ Application: &ApplicationDefaults
             Rule: "MAJORITY Endorsement"
         Endorsement:
             Type: Signature
-            Rule: "OR('AfrinicMSP.peer', 'ApnicMSP.peer', 'ArinMSP.peer', 'RipenccMSP.peer', 'LacnicMSP.peer', 'RonoMSP.peer')"
+            Rule: "OR('PatientMSP.peer', 'DoctorMSP.peer', 'PathologistMSP.peer', 'PharmacyMSP.peer', 'MedlabMSP.peer', 'AdminMSP.peer')"
 
     Capabilities:
         <<: *ApplicationCapabilities
@@ -553,24 +553,24 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *Afrinic
-                    - *Apnic
-                    - *Arin
-                    - *Ripencc
-                    - *Lacnic
-                    - *Rono
+                    - *Patient
+                    - *Doctor
+                    - *Pathologist
+                    - *Pharmacy
+                    - *Medlab
+                    - *Admin
     TwoOrgsChannel:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Afrinic
-                - *Apnic
-                - *Arin
-                - *Ripencc
-                - *Lacnic
-                - *Rono
+                - *Patient
+                - *Doctor
+                - *Pathologist
+                - *Pharmacy
+                - *Medlab
+                - *Admin
             Capabilities:
                 <<: *ApplicationCapabilities
 
