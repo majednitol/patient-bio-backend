@@ -1,5 +1,5 @@
 version: 1.2.0
-port: 9054
+port: 8054
 debug: false
 crlsizelimit: 512000
 
@@ -12,7 +12,7 @@ tls:
     certfiles:
 
 ca:
-  name: arinCA
+  name: doctorCA
   keyfile:
   certfile:
   chainfile:
@@ -65,7 +65,7 @@ ldap:
           value:
 
 affiliations:
-  arin:
+  doctor:
     - technical
     - financial
     - admin
@@ -95,17 +95,17 @@ signing:
       expiry: 8760h
 
 csr:
-  cn: ca-arin
+  cn: ca-doctor
   names:
     - C: US
       ST: "New York"
       L: "New York"
-      O: ca-arin
-      OU: ca-arin
+      O: ca-doctor
+      OU: ca-doctor
   hosts:
     - localhost
     - rono.com
-    - ca-arin
+    - ca-doctor
   ca:
     expiry: 131400h
     pathlength: 1

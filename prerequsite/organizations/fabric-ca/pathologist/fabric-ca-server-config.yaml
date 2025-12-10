@@ -1,5 +1,5 @@
 version: 1.2.0
-port: 11054
+port: 9054
 debug: false
 crlsizelimit: 512000
 
@@ -12,7 +12,7 @@ tls:
     certfiles:
 
 ca:
-  name: ripenccCA
+  name: pathologistCA
   keyfile:
   certfile:
   chainfile:
@@ -65,7 +65,7 @@ ldap:
           value:
 
 affiliations:
-  ripencc:
+  pathologist:
     - technical
     - financial
     - admin
@@ -95,17 +95,17 @@ signing:
       expiry: 8760h
 
 csr:
-  cn: ca-ripencc
+  cn: ca-pathologist
   names:
     - C: US
       ST: "New York"
       L: "New York"
-      O: ca-ripencc
-      OU: ca-ripencc
+      O: ca-pathologist
+      OU: ca-pathologist
   hosts:
     - localhost
     - rono.com
-    - ca-ripencc
+    - ca-pathologist
   ca:
     expiry: 131400h
     pathlength: 1

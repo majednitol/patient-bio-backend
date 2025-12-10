@@ -1,5 +1,5 @@
 version: 1.2.0
-port: 7054
+port: 11054
 debug: false
 crlsizelimit: 512000
 
@@ -12,7 +12,7 @@ tls:
     certfiles:
 
 ca:
-  name: afrinicCA
+  name: pharmacyCA
   keyfile:
   certfile:
   chainfile:
@@ -65,7 +65,7 @@ ldap:
           value:
 
 affiliations:
-  afrinic:
+  pharmacy:
     - technical
     - financial
     - admin
@@ -95,17 +95,17 @@ signing:
       expiry: 8760h
 
 csr:
-  cn: ca-afrinic
+  cn: ca-pharmacy
   names:
     - C: US
       ST: "New York"
       L: "New York"
-      O: ca-afrinic
-      OU: ca-afrinic
+      O: ca-pharmacy
+      OU: ca-pharmacy
   hosts:
     - localhost
     - rono.com
-    - ca-afrinic
+    - ca-pharmacy
   ca:
     expiry: 131400h
     pathlength: 1

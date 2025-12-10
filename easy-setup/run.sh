@@ -17,7 +17,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")"; pwd)
 
 # echo "Running certificate creation job from 3.certificates"
 # kubectl apply -f "$SCRIPT_DIR/../3.certifcates/job.yaml"
-# sleep 30
+# sleep 50
 # kubectl logs job/create-certs -f
 
 # echo "Running artifact generation job from 4.artifacts"
@@ -33,16 +33,16 @@ SCRIPT_DIR=$(cd "$(dirname "$0")"; pwd)
 
 # echo "Deploying Peer nodes from 7.peer"
 # bash "$SCRIPT_DIR/../7.peers/deploy_peers_org.sh"
-bash "$SCRIPT_DIR/../7.peers/deploy_cli_peers.sh"
-bash "$SCRIPT_DIR/../7.peers/peer.sh"
-sleep 10
-echo "Packaging and preparing chaincode from 8.chaincode"
+# bash "$SCRIPT_DIR/../7.peers/deploy_cli_peers.sh"
+# bash "$SCRIPT_DIR/../7.peers/peer.sh"
+# sleep 10
+# echo "Packaging and preparing chaincode from 8.chaincode"
 
-bash "$SCRIPT_DIR/../8.chaincode/packaging_chaincode.sh"
-sleep 10
-echo "Deploying chaincode lifecycle from 9.cc-deploy"
+# bash "$SCRIPT_DIR/../8.chaincode/packaging_chaincode.sh"
+# sleep 10
+# echo "Deploying chaincode lifecycle from 9.cc-deploy"
 
-bash "$SCRIPT_DIR/../9.cc-deploy/deploy_chaincodes.sh"
+# bash "$SCRIPT_DIR/../9.cc-deploy/deploy_chaincodes.sh"
 bash "$SCRIPT_DIR/../9.cc-deploy/lifecycle_chaincode.sh"
 
 echo "creating connection profile"

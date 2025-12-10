@@ -1,5 +1,5 @@
 version: 1.2.0
-port: 12054
+port: 7054
 debug: false
 crlsizelimit: 512000
 
@@ -12,7 +12,7 @@ tls:
     certfiles:
 
 ca:
-  name: lacnicCA
+  name: patientCA
   keyfile:
   certfile:
   chainfile:
@@ -65,7 +65,7 @@ ldap:
           value:
 
 affiliations:
-  lacnic:
+  patient:
     - technical
     - financial
     - admin
@@ -95,17 +95,17 @@ signing:
       expiry: 8760h
 
 csr:
-  cn: ca-lacnic
+  cn: ca-patient
   names:
     - C: US
       ST: "New York"
       L: "New York"
-      O: ca-lacnic
-      OU: ca-lacnic
+      O: ca-patient
+      OU: ca-patient
   hosts:
     - localhost
     - rono.com
-    - ca-lacnic
+    - ca-patient
   ca:
     expiry: 131400h
     pathlength: 1

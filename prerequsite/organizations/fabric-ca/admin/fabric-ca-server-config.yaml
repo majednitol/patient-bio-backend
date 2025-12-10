@@ -12,7 +12,7 @@ tls:
     certfiles:
 
 ca:
-  name: ronoCA
+  name: adminCA
   keyfile:
   certfile:
   chainfile:
@@ -65,7 +65,7 @@ ldap:
           value:
 
 affiliations:
-  rono:
+  admin:
     - technical
     - financial
     - admin
@@ -95,17 +95,17 @@ signing:
       expiry: 8760h
 
 csr:
-  cn: ca-rono
+  cn: ca-admin
   names:
     - C: US
       ST: "New York"
       L: "New York"
-      O: ca-rono
-      OU: ca-rono
+      O: ca-admin
+      OU: ca-admin
   hosts:
     - localhost
     - rono.com
-    - ca-rono
+    - ca-admin
   ca:
     expiry: 131400h
     pathlength: 1
