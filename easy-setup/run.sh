@@ -43,7 +43,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")"; pwd)
 # echo "Deploying chaincode lifecycle from 9.cc-deploy"
 
 # bash "$SCRIPT_DIR/../9.cc-deploy/deploy_chaincodes.sh"
-bash "$SCRIPT_DIR/../9.cc-deploy/lifecycle_chaincode.sh"
+# bash "$SCRIPT_DIR/../9.cc-deploy/lifecycle_chaincode.sh"
 
 echo "creating connection profile"
 echo "📁 Switching to nfs_clientshare directory to generate connection profile..."

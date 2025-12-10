@@ -7,7 +7,7 @@ else
   echo "❌ config.env file not found!"
   exit 1
 fi
-ORG_LIST=( "${ORG_LIST[@]:1}" )
+ORG_LIST=( "${ORG_LIST[@]}" )
 for ORG in "${ORG_LIST[@]}"; do
   CLI_POD=$(kubectl get pods -o name | grep "cli-peer0-patient" | head -n1)
 
