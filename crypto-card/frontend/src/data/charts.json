@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "month": "Jan",
+      "spent": 1200
+    },
+    {
+      "id": 2,
+      "month": "Feb",
+      "spent": 467
+    },
+    {
+      "id": 3,
+      "month": "Mar",
+      "spent": 408
+    },
+    {
+      "id": 4,
+      "month": "Apr",
+      "spent": 900
+    },
+    {
+      "id": 5,
+      "month": "May",
+      "spent": 400
+    },
+    {
+      "id": 6,
+      "month": "Jun",
+      "spent": 1200
+    },
+    {
+      "id": 7,
+      "month": "Jul",
+      "spent": 0
+    },
+    {
+      "id": 8,
+      "month": "Aug",
+      "spent": 0
+    }
+  ]
+}
