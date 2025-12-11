@@ -31,11 +31,10 @@ export async function RegisterNewUser(request) {
     try {
         const userId = request.userId;
         const org = request.org;
-        const encryptionKey = request.encryptionKey;
-        const secret = request.secret;
+        const affiliation = request.affiliation;
         console.log("userId", userId);
 
-        let result = await registerUser({ OrgMSP: org, userId: userId ,secret:secret,encryptionKey:encryptionKey});
+        let result = await registerUser({ OrgMSP: org, userId: userId ,affiliation:affiliation});
         console.log(result)
         return result
     } catch (error) {

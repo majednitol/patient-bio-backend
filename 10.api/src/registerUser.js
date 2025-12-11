@@ -11,12 +11,25 @@ import { getCCP } from "./common/buildCCP.js";
 let config = utils.getConfig()
 config.file(resolve('config.json'))
 let walletPath;
-export async function registerUser({ OrgMSP, userId, secret, encryptionKey }) {
-    let org = Number(OrgMSP.match(/\d/g).join(""));
+// export async function registerUser({ OrgMSP, userId, secret, encryptionKey }) {
+//     let org = Number(OrgMSP.match(/\d/g).join(""));
+//     let ccp = getCCP(org);
+//     const caClient = buildCAClient(FabricCAServices, ccp, `ca-org${org}`);
+//     const wallet = await buildWallet(); 
+//     await enrollAdmin(caClient, wallet, OrgMSP);
+//     await registerAndEnrollUser(caClient, wallet, OrgMSP, userId, `org${org}.department1`, secret, encryptionKey);
+//     return { wallet };
+// }
+
+
+
+export async function registerUser({ OrgMSP, userId,affiliation }) {
+     
+    const org = OrgMSP.replace('MSP', '').toLowerCase();
     let ccp = getCCP(org);
-    const caClient = buildCAClient(FabricCAServices, ccp, `ca-org${org}`);
+    const caClient = buildCAClient(FabricCAServices, ccp, `ca-${org}`);
     const wallet = await buildWallet(); 
     await enrollAdmin(caClient, wallet, OrgMSP);
-    await registerAndEnrollUser(caClient, wallet, OrgMSP, userId, `org${org}.department1`, secret, encryptionKey);
+    await registerAndEnrollUser(caClient, wallet, OrgMSP, userId, affiliation);
     return { wallet };
 }

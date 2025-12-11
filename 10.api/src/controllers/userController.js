@@ -29,8 +29,7 @@ export async function registerNewUser(req, res) {
         let payload = {
             "org": req.body.org,
             "userId": req.body.userId,
-            "secret": req.body.secret,
-            "encryptionKey": req.body.encryptionKey
+            "affiliation": req.body.affiliation,
 
         }
         console.log("payload", payload)
