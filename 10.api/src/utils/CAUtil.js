@@ -16,64 +16,6 @@ const adminUserPasswd = 'adminpw';
  */
 import { performance } from 'perf_hooks';
 
-// export async function registerAndEnrollUser(caClient, wallet, orgMspId, userId, affiliation, secret, encryptionKey) {
-  
-
-//     try {
-        
-//         const userIdentity = await wallet.get(userId);
-
-//         if (userIdentity) {
-//             console.log(`User ${userId} exists.`);
-//             return;
-//         }
-
-//         // Get admin identity from the wallet
-    
-//         const adminIdentity = await wallet.get(adminUserId);
-//         if (!adminIdentity) {
-//             throw new Error('Admin identity not found.');
-//         }
-
-//         // Prepare admin context for registration
-//         const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
-//         const adminUser = await provider.getUserContext(adminIdentity, adminUserId);
-
-//         // Register the user
-//         const registerStart = performance.now();
-//         const secretData = await caClient.register({
-//             affiliation: affiliation,
-//             enrollmentID: userId,
-//             role: 'client'
-//         }, adminUser);
-
-//         // Enroll the user
-//         const enrollment = await caClient.enroll({
-//             enrollmentID: userId,
-//             enrollmentSecret: secretData
-//         });
-
-//         const x509Identity = {
-//             credentials: {
-//                 certificate: enrollment.certificate,
-//                 privateKey: enrollment.key.toBytes(),
-//             },
-//             mspId: orgMspId,
-//             type: 'X.509'
-//         };
-
-//         await wallet.put(userId, x509Identity);
-
-
-//         // Log timing results
-//         console.log(`User ${userId} enrolled successfully.`);
-
-//     } catch (error) {
-//         console.error(`Error: ${error}`);
-//     }
-// }
-
-
 
 export async function registerAndEnrollUser(caClient, wallet, orgMspId, userId, affiliation) {
 
@@ -121,14 +63,7 @@ export async function registerAndEnrollUser(caClient, wallet, orgMspId, userId, 
         console.error(`Error: ${error}`);
     }
 }
-// export function buildCAClient(FabricCAServices, ccp, caHostName) {
 
-// 	const caInfo = ccp.certificateAuthorities[caHostName];
-// 	const caTLSCACerts = caInfo.tlsCACerts.pem;
-// 	const caClient = new FabricCAServices(caInfo.url, { trustedRoots: caTLSCACerts, verify: true }, caInfo.caName);
-// 	console.log(`Built a CA Client named ${caInfo.caName}`);
-// 	return caClient;
-// }
 export function buildCAClient(FabricCAServices, ccp, caHostName) {
    console.log('caHostName',caHostName)
    console.log('ccp from build ',ccp)
