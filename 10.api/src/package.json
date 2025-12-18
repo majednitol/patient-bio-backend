@@ -4,6 +4,7 @@
     "scripts": {
         "start": "nodemon app.js"
     },
+    
     "dependencies": {
         "@grpc/grpc-js": "^1.12.5",
         "@hyperledger/fabric-gateway": "^1.7.1",
