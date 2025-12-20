@@ -15,4 +15,11 @@ peer lifecycle chaincode install basic-org1.tgz  [need to store package identifi
 peer lifecycle chaincode install basic-org2.tgz
 peer lifecycle chaincode install basic-org3.tgz
 
+docker buildx build \
+   --platform linux/amd64,linux/arm64 \
+   -t majedur708/hlf-api:18.100.60 \
+   --push .
 
+
+
+majedur708/hlf-api:18.100.60

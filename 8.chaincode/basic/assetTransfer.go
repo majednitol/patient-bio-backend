@@ -77,28 +77,35 @@ type Admin struct {
 	Location              string   `json:"location"`
 	PatientToAdmin        []string `json:"patientToAdmin"`
 	SharedAllUsersAddress []string `json:"sharedAllUsersAddress"`
+	Country               string   `json:"country"`
+	Region                string   `json:"region"`
+	AuthorizedCountries   []string `json:"authorizedCountries"`
 }
 
-func NewAdmin(adminID string, name string, gender string, birthday string, emailAddress string, location string) Admin {
+func NewAdmin(adminID string, name string, gender string, birthday string, emailAddress string, location string, country string, region string) Admin {
 	// Return the Admin object with default values for unspecified fields
 	return Admin{
 		AdminID:               adminID,
 		Name:                  name,
 		Gender:                gender,
 		Birthday:              birthday,
-		EmailAddress:          emailAddress,              // Default profile picture
-		AllPrescription:       make(map[string][]string), // Default empty list for prescriptions
+		EmailAddress:          emailAddress,
+		AllPrescription:       make(map[string][]string),
 		IsAdded:               true,
-		UserType:              "admin",    // Default user type
-		Age:                   30,         // Default age
-		Location:              location,   // Default location
-		PatientToAdmin:        []string{}, // Default empty list for patient associations
-		SharedAllUsersAddress: []string{}, // Default empty list for shared users
+		UserType:              "admin",
+		Age:                   30,
+		Location:              location,
+		PatientToAdmin:        []string{},
+		SharedAllUsersAddress: []string{},
+		Country:               country,
+		Region:                region,
+		AuthorizedCountries: []string{country},
+		
 	}
 }
-func (s *SmartContract) SetAdmin(ctx contractapi.TransactionContextInterface, adminID string, name string, gender string, birthday string, emailAddress string, location string) error {
+func (s *SmartContract) SetAdmin(ctx contractapi.TransactionContextInterface, adminID string, name string, gender string, birthday string, emailAddress string, location string, country string, region string) error {
 	// Create a new Admin object
-	admin := NewAdmin(adminID, name, gender, birthday, emailAddress, location)
+	admin := NewAdmin(adminID, name, gender, birthday, emailAddress, location, country, region)
 
 	// Marshal the admin object to JSON
 	adminJSON, err := json.Marshal(admin)
@@ -127,8 +134,6 @@ func (s *SmartContract) SetAdmin(ctx contractapi.TransactionContextInterface, ad
 	return ctx.GetStub().PutState(adminID, adminJSON)
 
 }
-
-
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	accounts := make(map[string]string)
@@ -164,6 +169,67 @@ func (s *SmartContract) GetAccounts(ctx contractapi.TransactionContextInterface)
 
 	return accounts, nil
 }
+
+func (s *SmartContract) GetAuthorizedCountries(
+	ctx contractapi.TransactionContextInterface,
+	adminID string,
+) ([]string, error) {
+
+	admin, err := s.GetAdmin(ctx, adminID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !admin.IsAdded {
+		return nil, fmt.Errorf("admin with ID=%s is not active", adminID)
+	}
+
+	return admin.AuthorizedCountries, nil
+}
+
+func (s *SmartContract) SetAuthorizedCountries(
+	ctx contractapi.TransactionContextInterface,
+	adminID string,
+	country string,
+) error {
+
+	if country == "" {
+		return fmt.Errorf("country cannot be empty")
+	}
+
+	admin, err := s.GetAdmin(ctx, adminID)
+	if err != nil {
+		return err
+	}
+
+	if !admin.IsAdded {
+		return fmt.Errorf("admin with ID=%s is not active", adminID)
+	}
+
+	// Prevent duplicate country
+	for _, c := range admin.AuthorizedCountries {
+		if c == country {
+			return fmt.Errorf("country %s is already authorized", country)
+		}
+	}
+
+	// Add new country
+	admin.AuthorizedCountries = append(admin.AuthorizedCountries, country)
+
+	// Marshal updated admin object
+	adminJSON, err := json.Marshal(admin)
+	if err != nil {
+		return fmt.Errorf("failed to marshal admin data: %v", err)
+	}
+
+	// Save back to world state
+	if err := ctx.GetStub().PutState(adminID, adminJSON); err != nil {
+		return fmt.Errorf("failed to update admin authorized countries: %v", err)
+	}
+
+	return nil
+}
+
 
 func (s *SmartContract) GetAdmin(ctx contractapi.TransactionContextInterface, id string) (Admin, error) {
 	// Retrieve the admin data from the world state using the provided admin ID
@@ -212,12 +278,14 @@ type Patient struct {
 	EmailAddress        string                           `json:"emailAddress"`
 	SharedAllUsersId    []string                         `json:"sharedAllUsersId"`
 	PersonalDoctor      []map[string]map[string][]string `json:"personalDoctor"`
-	PersonalPathologist []map[string]map[string][]string                         `json:"personalPathologist"`
+	PersonalPathologist []map[string]map[string][]string `json:"personalPathologist"`
+	Country             string                           `json:"country"`
+	Region              string                           `json:"region"`
 }
 
-func NewPatient(patientID string, name string, gender string, age int, location string, birthday string, emailAddress string) Patient {
+func NewPatient(patientID string, name string, gender string, age int, location string, birthday string, emailAddress string, country string, region string) Patient {
 	return Patient{
-		 PatientID:           patientID,
+		PatientID:           patientID,
 		Name:                name,
 		Gender:              gender,
 		Age:                 age,
@@ -230,31 +298,35 @@ func NewPatient(patientID string, name string, gender string, age int, location 
 		SharedAllUsersId:    []string{},
 		PersonalDoctor:      []map[string]map[string][]string{},
 		PersonalPathologist: []map[string]map[string][]string{},
+		Country:             country,
+		Region:              region,
 	}
 }
 
 type Doctor struct {
-	DoctorID            string              `json:"doctorID"`
-	Name                string              `json:"name"`
-	Specialty           string              `json:"specialty"`
-	ConsultationFee     float32             `json:"consultationFee"`
-	BMDCNumber          int                 `json:"bmdcNumber"`
-	YearOfExperience    int                 `json:"yearOfExperience"`
-	PatientToDoctor     []string            `json:"patientToDoctor"`
-	PatientTest         []string            `json:"patientTest"`
-	IsAdded             bool                `json:"isAdded"`
-	TreatedPatient      []map[string]map[string][]string            `json:"treatedPatient"`
-	UserType            string              `json:"userType"`
-	ProfilePic          string              `json:"profilePic"`
-	Birthday            string              `json:"birthday"`
-	UserData            map[string]UserData `json:"userData"`
-	SenderPathologist   []map[string]map[string][]string            `json:"senderPathologist"`
-	ReceiverPathologist []map[string]map[string][]string            `json:"receiverPathologist"`
-	EmailAddress        string              `json:"emailAddress"`
+	DoctorID            string                           `json:"doctorID"`
+	Name                string                           `json:"name"`
+	Specialty           string                           `json:"specialty"`
+	ConsultationFee     float32                          `json:"consultationFee"`
+	BMDCNumber          int                              `json:"bmdcNumber"`
+	YearOfExperience    int                              `json:"yearOfExperience"`
+	PatientToDoctor     []string                         `json:"patientToDoctor"`
+	PatientTest         []string                         `json:"patientTest"`
+	IsAdded             bool                             `json:"isAdded"`
+	TreatedPatient      []map[string]map[string][]string `json:"treatedPatient"`
+	UserType            string                           `json:"userType"`
+	ProfilePic          string                           `json:"profilePic"`
+	Birthday            string                           `json:"birthday"`
+	UserData            map[string]UserData              `json:"userData"`
+	SenderPathologist   []map[string]map[string][]string `json:"senderPathologist"`
+	ReceiverPathologist []map[string]map[string][]string `json:"receiverPathologist"`
+	EmailAddress        string                           `json:"emailAddress"`
+	Country             string                           `json:"country"`
+	Region              string                           `json:"region"`
 }
 
 // Constructor function with default values
-func NewDoctor(doctorID string, name string, specialty string, consultationFee float32, BMDCNumber int, yearOfExperience int, birthday string, emailAddress string) Doctor {
+func NewDoctor(doctorID string, name string, specialty string, consultationFee float32, BMDCNumber int, yearOfExperience int, birthday string, emailAddress string, country string, region string) Doctor {
 	return Doctor{
 		DoctorID:            doctorID,
 		Name:                name,
@@ -262,16 +334,18 @@ func NewDoctor(doctorID string, name string, specialty string, consultationFee f
 		ConsultationFee:     consultationFee,
 		BMDCNumber:          BMDCNumber,
 		YearOfExperience:    yearOfExperience,
-		PatientToDoctor:     []string{},            // Default to empty array
-		PatientTest:         []string{},            // Default to empty array
-		TreatedPatient:      []map[string]map[string][]string{},            // Default to empty array
-		IsAdded:             true,                  // Default to true
-		UserType:            "doctor",              // Default userType
-		SenderPathologist:   []map[string]map[string][]string{},            // Default to empty array
-		ReceiverPathologist: []map[string]map[string][]string{},// Default to empty array
-		UserData:            map[string]UserData{}, // Default to empty map
+		PatientToDoctor:     []string{},
+		PatientTest:         []string{},
+		TreatedPatient:      []map[string]map[string][]string{},
+		IsAdded:             true,
+		UserType:            "doctor",
+		SenderPathologist:   []map[string]map[string][]string{},
+		ReceiverPathologist: []map[string]map[string][]string{},
+		UserData:            map[string]UserData{},
 		Birthday:            birthday,
 		EmailAddress:        emailAddress,
+		Country:             country,
+		Region:              region,
 	}
 }
 
@@ -884,9 +958,9 @@ func (s *SmartContract) AddTopMedicine(ctx contractapi.TransactionContextInterfa
 
 }
 
-func (s *SmartContract) SetPatient(ctx contractapi.TransactionContextInterface, patientID string, name string, gender string, age int, location string, birthday string, emailAddress string) error {
+func (s *SmartContract) SetPatient(ctx contractapi.TransactionContextInterface, patientID string, name string, gender string, age int, location string, birthday string, emailAddress string, country string, region string) error {
 	// Create a new Patient object
-	patient := NewPatient(patientID, name, gender, age, location, birthday, emailAddress)
+	patient := NewPatient(patientID, name, gender, age, location, birthday, emailAddress, country, region)
 
 	// Store the patient in the world state using putState
 	patientJSON, err := json.Marshal(patient)
@@ -969,233 +1043,233 @@ func (s *SmartContract) SetPatientPersonalData(ctx contractapi.TransactionContex
 	return nil
 }
 func checkAndAddDiseaseEntry(entries *[]map[string]map[string][]string, disease string, userId string, url []string) bool {
-    // Check if disease exists for the given entries
-    for _, entry := range *entries {
-        if diseaseData, exists := entry[disease]; exists {
-            if diseaseData[userId] == nil {
-                diseaseData[userId] = []string{}
-            }
-            // Append new URLs
-            entry[disease][userId] = append(entry[disease][userId], url...)
-            return true
-        }
-    }
-    return false
+	// Check if disease exists for the given entries
+	for _, entry := range *entries {
+		if diseaseData, exists := entry[disease]; exists {
+			if diseaseData[userId] == nil {
+				diseaseData[userId] = []string{}
+			}
+			// Append new URLs
+			entry[disease][userId] = append(entry[disease][userId], url...)
+			return true
+		}
+	}
+	return false
 }
 
 func (sc *SmartContract) AddPrescription(ctx contractapi.TransactionContextInterface, disease string, sUserId string, rUserId string, url []string) error {
-    accounts, err := sc.GetAccounts(ctx)
-    if err != nil {
-        return err
-    }
+	accounts, err := sc.GetAccounts(ctx)
+	if err != nil {
+		return err
+	}
 
-    senderType := accounts[sUserId]
-    receiverType := accounts[rUserId]
+	senderType := accounts[sUserId]
+	receiverType := accounts[rUserId]
 
-    // Validate that URL is not empty
-    if len(url) == 0 {
-        return fmt.Errorf("URL cannot be empty for prescription")
-    }
+	// Validate that URL is not empty
+	if len(url) == 0 {
+		return fmt.Errorf("URL cannot be empty for prescription")
+	}
 
-    switch senderType {
-    case string(TDoctor):
-        doctor, err := sc.GetDoctor(ctx, sUserId)
-        if err != nil || !doctor.IsAdded {
-            return fmt.Errorf("doctor with ID=%s not found or not added: %v", sUserId, err)
-        }
+	switch senderType {
+	case string(TDoctor):
+		doctor, err := sc.GetDoctor(ctx, sUserId)
+		if err != nil || !doctor.IsAdded {
+			return fmt.Errorf("doctor with ID=%s not found or not added: %v", sUserId, err)
+		}
 
-        switch receiverType {
-        case string(TPathologist):
-            pathologist, err := sc.GetPathologist(ctx, rUserId)
-            if err != nil || !pathologist.IsAdded {
-                return fmt.Errorf("pathologist with ID=%s not found or not added: %v", rUserId, err)
-            }
+		switch receiverType {
+		case string(TPathologist):
+			pathologist, err := sc.GetPathologist(ctx, rUserId)
+			if err != nil || !pathologist.IsAdded {
+				return fmt.Errorf("pathologist with ID=%s not found or not added: %v", rUserId, err)
+			}
 
-            if doctor.ReceiverPathologist == nil {
-                doctor.ReceiverPathologist = make([]map[string]map[string][]string, 0)
-            }
-            if pathologist.SenderDoctor == nil {
-                pathologist.SenderDoctor = make([]map[string]map[string][]string, 0)
-            }
+			if doctor.ReceiverPathologist == nil {
+				doctor.ReceiverPathologist = make([]map[string]map[string][]string, 0)
+			}
+			if pathologist.SenderDoctor == nil {
+				pathologist.SenderDoctor = make([]map[string]map[string][]string, 0)
+			}
 
-            // Check disease for both doctor and pathologist
-            diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.ReceiverPathologist, disease, sUserId, url)
-            diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.SenderDoctor, disease, sUserId, url)
+			// Check disease for both doctor and pathologist
+			diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.ReceiverPathologist, disease, sUserId, url)
+			diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.SenderDoctor, disease, sUserId, url)
 
-            if !diseaseExistsDoctor {
-                newDoctorEntry := map[string]map[string][]string{
+			if !diseaseExistsDoctor {
+				newDoctorEntry := map[string]map[string][]string{
 					disease: {rUserId: url},
-                }
-                doctor.ReceiverPathologist = append(doctor.ReceiverPathologist, newDoctorEntry)
-            }
-            if !diseaseExistsPathologist {
-                newPathologistEntry := map[string]map[string][]string{
+				}
+				doctor.ReceiverPathologist = append(doctor.ReceiverPathologist, newDoctorEntry)
+			}
+			if !diseaseExistsPathologist {
+				newPathologistEntry := map[string]map[string][]string{
 					disease: {sUserId: url},
-                }
-                pathologist.SenderDoctor = append(pathologist.SenderDoctor, newPathologistEntry)
-            }
+				}
+				pathologist.SenderDoctor = append(pathologist.SenderDoctor, newPathologistEntry)
+			}
 
-            // Save updated doctor and pathologist states
-            if err := sc.putState(ctx, sUserId, doctor); err != nil {
-                return fmt.Errorf("failed to update doctor state for ID=%s: %v", sUserId, err)
-            }
-            if err := sc.putState(ctx, rUserId, pathologist); err != nil {
-                return fmt.Errorf("failed to update pathologist state for ID=%s: %v", rUserId, err)
-            }
+			// Save updated doctor and pathologist states
+			if err := sc.putState(ctx, sUserId, doctor); err != nil {
+				return fmt.Errorf("failed to update doctor state for ID=%s: %v", sUserId, err)
+			}
+			if err := sc.putState(ctx, rUserId, pathologist); err != nil {
+				return fmt.Errorf("failed to update pathologist state for ID=%s: %v", rUserId, err)
+			}
 
-        case string(TPatient):
-            patient, err := sc.GetPatient(ctx, rUserId)
-            if err != nil || !patient.IsAdded {
-                return fmt.Errorf("patient with ID=%s not found or not added: %v", rUserId, err)
-            }
+		case string(TPatient):
+			patient, err := sc.GetPatient(ctx, rUserId)
+			if err != nil || !patient.IsAdded {
+				return fmt.Errorf("patient with ID=%s not found or not added: %v", rUserId, err)
+			}
 
-            if doctor.TreatedPatient == nil {
-                doctor.TreatedPatient = make([]map[string]map[string][]string, 0)
-            }
-            if patient.PersonalDoctor == nil {
-                patient.PersonalDoctor = make([]map[string]map[string][]string, 0)
-            }
+			if doctor.TreatedPatient == nil {
+				doctor.TreatedPatient = make([]map[string]map[string][]string, 0)
+			}
+			if patient.PersonalDoctor == nil {
+				patient.PersonalDoctor = make([]map[string]map[string][]string, 0)
+			}
 
-            // Check disease for both doctor and patient
-            diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.TreatedPatient, disease, sUserId, url)
-            diseaseExistsPatient := checkAndAddDiseaseEntry(&patient.PersonalDoctor, disease, sUserId, url)
+			// Check disease for both doctor and patient
+			diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.TreatedPatient, disease, sUserId, url)
+			diseaseExistsPatient := checkAndAddDiseaseEntry(&patient.PersonalDoctor, disease, sUserId, url)
 
-            if !diseaseExistsDoctor {
-                newDoctorEntry := map[string]map[string][]string{
+			if !diseaseExistsDoctor {
+				newDoctorEntry := map[string]map[string][]string{
 					disease: {rUserId: url},
-                }
-                doctor.TreatedPatient = append(doctor.TreatedPatient, newDoctorEntry)
-            }
-            if !diseaseExistsPatient {
-                newPatientEntry := map[string]map[string][]string{
-                    disease: {sUserId: url},
-                }
-                patient.PersonalDoctor = append(patient.PersonalDoctor, newPatientEntry)
-            }
-
-            // Save updated doctor and patient states
-            if err := sc.putState(ctx, sUserId, doctor); err != nil {
-                return fmt.Errorf("failed to update doctor state for ID=%s: %v", sUserId, err)
-            }
-            if err := sc.putState(ctx, rUserId, patient); err != nil {
-                return fmt.Errorf("failed to update patient state for ID=%s: %v", rUserId, err)
-            }
-
-        default:
-            return fmt.Errorf("unsupported receiver type for doctor")
-        }
-
-    case string(TPathologist):
-        pathologist, err := sc.GetPathologist(ctx, sUserId)
-        if err != nil || !pathologist.IsAdded {
-            return fmt.Errorf("pathologist with ID=%s not found or not added: %v", sUserId, err)
-        }
-
-        switch receiverType {
-        case string(TDoctor):
-            doctor, err := sc.GetDoctor(ctx, rUserId)
-            if err != nil || !doctor.IsAdded {
-                return fmt.Errorf("doctor with ID=%s not found or not added: %v", rUserId, err)
-            }
-
-            if pathologist.ReceiverDoctor == nil {
-                pathologist.ReceiverDoctor = make([]map[string]map[string][]string, 0)
-            }
-            if doctor.SenderPathologist == nil {
-                doctor.SenderPathologist = make([]map[string]map[string][]string, 0)
-            }
-
-            // Check disease for both pathologist and doctor
-            diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.ReceiverDoctor, disease, sUserId, url)
-            diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.SenderPathologist, disease, sUserId, url)
-
-            if !diseaseExistsPathologist {
-                newPathologistEntry := map[string]map[string][]string{
-					disease: {rUserId: url},
-                }
-                pathologist.ReceiverDoctor = append(pathologist.ReceiverDoctor, newPathologistEntry)
-            }
-            if !diseaseExistsDoctor {
-                newDoctorEntry := map[string]map[string][]string{
+				}
+				doctor.TreatedPatient = append(doctor.TreatedPatient, newDoctorEntry)
+			}
+			if !diseaseExistsPatient {
+				newPatientEntry := map[string]map[string][]string{
 					disease: {sUserId: url},
-                }
-                doctor.SenderPathologist = append(doctor.SenderPathologist, newDoctorEntry)
-            }
+				}
+				patient.PersonalDoctor = append(patient.PersonalDoctor, newPatientEntry)
+			}
 
-            // Save updated pathologist and doctor states
-            if err := sc.putState(ctx, sUserId, pathologist); err != nil {
-                return fmt.Errorf("failed to update pathologist state for ID=%s: %v", sUserId, err)
-            }
-            if err := sc.putState(ctx, rUserId, doctor); err != nil {
-                return fmt.Errorf("failed to update doctor state for ID=%s: %v", rUserId, err)
-            }
+			// Save updated doctor and patient states
+			if err := sc.putState(ctx, sUserId, doctor); err != nil {
+				return fmt.Errorf("failed to update doctor state for ID=%s: %v", sUserId, err)
+			}
+			if err := sc.putState(ctx, rUserId, patient); err != nil {
+				return fmt.Errorf("failed to update patient state for ID=%s: %v", rUserId, err)
+			}
 
-        case string(TPatient):
-            patient, err := sc.GetPatient(ctx, rUserId)
-            if err != nil || !patient.IsAdded {
-                return fmt.Errorf("patient with ID=%s not found or not added: %v", rUserId, err)
-            }
+		default:
+			return fmt.Errorf("unsupported receiver type for doctor")
+		}
 
-            if pathologist.TreatedPatient == nil {
-                pathologist.TreatedPatient = make([]map[string]map[string][]string, 0)
-            }
-            if patient.PersonalPathologist == nil {
-                patient.PersonalPathologist = make([]map[string]map[string][]string, 0)
-            }
+	case string(TPathologist):
+		pathologist, err := sc.GetPathologist(ctx, sUserId)
+		if err != nil || !pathologist.IsAdded {
+			return fmt.Errorf("pathologist with ID=%s not found or not added: %v", sUserId, err)
+		}
 
-            // Check disease for both pathologist and patient
-            diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.TreatedPatient, disease, sUserId, url)
-            diseaseExistsPatient := checkAndAddDiseaseEntry(&patient.PersonalPathologist, disease, sUserId, url)
+		switch receiverType {
+		case string(TDoctor):
+			doctor, err := sc.GetDoctor(ctx, rUserId)
+			if err != nil || !doctor.IsAdded {
+				return fmt.Errorf("doctor with ID=%s not found or not added: %v", rUserId, err)
+			}
 
-            if !diseaseExistsPathologist {
-                newPathologistEntry := map[string]map[string][]string{
-                   
+			if pathologist.ReceiverDoctor == nil {
+				pathologist.ReceiverDoctor = make([]map[string]map[string][]string, 0)
+			}
+			if doctor.SenderPathologist == nil {
+				doctor.SenderPathologist = make([]map[string]map[string][]string, 0)
+			}
+
+			// Check disease for both pathologist and doctor
+			diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.ReceiverDoctor, disease, sUserId, url)
+			diseaseExistsDoctor := checkAndAddDiseaseEntry(&doctor.SenderPathologist, disease, sUserId, url)
+
+			if !diseaseExistsPathologist {
+				newPathologistEntry := map[string]map[string][]string{
 					disease: {rUserId: url},
-                }
-                pathologist.TreatedPatient = append(pathologist.TreatedPatient, newPathologistEntry)
-            }
-            if !diseaseExistsPatient {
-                newPatientEntry := map[string]map[string][]string{
+				}
+				pathologist.ReceiverDoctor = append(pathologist.ReceiverDoctor, newPathologistEntry)
+			}
+			if !diseaseExistsDoctor {
+				newDoctorEntry := map[string]map[string][]string{
 					disease: {sUserId: url},
-                }
-                patient.PersonalPathologist = append(patient.PersonalPathologist, newPatientEntry)
-            }
+				}
+				doctor.SenderPathologist = append(doctor.SenderPathologist, newDoctorEntry)
+			}
 
-            // Save updated pathologist and patient states
-            if err := sc.putState(ctx, sUserId, pathologist); err != nil {
-                return fmt.Errorf("failed to update pathologist state for ID=%s: %v", sUserId, err)
-            }
-            if err := sc.putState(ctx, rUserId, patient); err != nil {
-                return fmt.Errorf("failed to update patient state for ID=%s: %v", rUserId, err)
-            }
+			// Save updated pathologist and doctor states
+			if err := sc.putState(ctx, sUserId, pathologist); err != nil {
+				return fmt.Errorf("failed to update pathologist state for ID=%s: %v", sUserId, err)
+			}
+			if err := sc.putState(ctx, rUserId, doctor); err != nil {
+				return fmt.Errorf("failed to update doctor state for ID=%s: %v", rUserId, err)
+			}
 
-        default:
-            return fmt.Errorf("unsupported receiver type for pathologist")
-        }
+		case string(TPatient):
+			patient, err := sc.GetPatient(ctx, rUserId)
+			if err != nil || !patient.IsAdded {
+				return fmt.Errorf("patient with ID=%s not found or not added: %v", rUserId, err)
+			}
 
-    case string(TPatient):
+			if pathologist.TreatedPatient == nil {
+				pathologist.TreatedPatient = make([]map[string]map[string][]string, 0)
+			}
+			if patient.PersonalPathologist == nil {
+				patient.PersonalPathologist = make([]map[string]map[string][]string, 0)
+			}
+
+			// Check disease for both pathologist and patient
+			diseaseExistsPathologist := checkAndAddDiseaseEntry(&pathologist.TreatedPatient, disease, sUserId, url)
+			diseaseExistsPatient := checkAndAddDiseaseEntry(&patient.PersonalPathologist, disease, sUserId, url)
+
+			if !diseaseExistsPathologist {
+				newPathologistEntry := map[string]map[string][]string{
+
+					disease: {rUserId: url},
+				}
+				pathologist.TreatedPatient = append(pathologist.TreatedPatient, newPathologistEntry)
+			}
+			if !diseaseExistsPatient {
+				newPatientEntry := map[string]map[string][]string{
+					disease: {sUserId: url},
+				}
+				patient.PersonalPathologist = append(patient.PersonalPathologist, newPatientEntry)
+			}
+
+			// Save updated pathologist and patient states
+			if err := sc.putState(ctx, sUserId, pathologist); err != nil {
+				return fmt.Errorf("failed to update pathologist state for ID=%s: %v", sUserId, err)
+			}
+			if err := sc.putState(ctx, rUserId, patient); err != nil {
+				return fmt.Errorf("failed to update patient state for ID=%s: %v", rUserId, err)
+			}
+
+		default:
+			return fmt.Errorf("unsupported receiver type for pathologist")
+		}
+
+	case string(TPatient):
 		if rUserId == "-1" {
-            patient, err := sc.GetPatient(ctx, sUserId)
-        if err != nil || !patient.IsAdded {
-            return fmt.Errorf("patient with ID=%s not found or not added: %v", sUserId, err)
-        }
+			patient, err := sc.GetPatient(ctx, sUserId)
+			if err != nil || !patient.IsAdded {
+				return fmt.Errorf("patient with ID=%s not found or not added: %v", sUserId, err)
+			}
 
-        if patient.Prescriptions == nil {
-            patient.Prescriptions = make(map[string][]string)
-        }
-        patient.Prescriptions[disease] = append(patient.Prescriptions[disease], url...)
+			if patient.Prescriptions == nil {
+				patient.Prescriptions = make(map[string][]string)
+			}
+			patient.Prescriptions[disease] = append(patient.Prescriptions[disease], url...)
 
-        // Save updated patient state
-        if err := sc.putState(ctx, sUserId, patient); err != nil {
-            return fmt.Errorf("failed to update patient state for ID=%s: %v", sUserId, err)
-        }
-        }
+			// Save updated patient state
+			if err := sc.putState(ctx, sUserId, patient); err != nil {
+				return fmt.Errorf("failed to update patient state for ID=%s: %v", sUserId, err)
+			}
+		}
 
-    default:
-        return fmt.Errorf("unsupported sender type")
-    }
+	default:
+		return fmt.Errorf("unsupported sender type")
+	}
 
-    return nil
+	return nil
 }
 
 // Helper function to check if a value exists in a slice
@@ -1207,6 +1281,8 @@ func contains(slice []string, value string) bool {
 	}
 	return false
 }
+
+
 
 func (s *SmartContract) ShareData(
 	ctx contractapi.TransactionContextInterface,
@@ -1493,9 +1569,9 @@ func (s *SmartContract) GetPatient(ctx contractapi.TransactionContextInterface, 
 	return patient, nil
 }
 
-func (s *SmartContract) SetDoctor(ctx contractapi.TransactionContextInterface, doctorID string, name string, specialty string, consultationFee float32, BMDCNumber int, yearOfExperience int, birthday string, emailAddress string) error {
+func (s *SmartContract) SetDoctor(ctx contractapi.TransactionContextInterface, doctorID string, name string, specialty string, consultationFee float32, BMDCNumber int, yearOfExperience int, birthday string, emailAddress string, country string, region string) error {
 	// Create a new Doctor object
-	doctor := NewDoctor(doctorID, name, specialty, consultationFee, BMDCNumber, yearOfExperience, birthday, emailAddress)
+	doctor := NewDoctor(doctorID, name, specialty, consultationFee, BMDCNumber, yearOfExperience, birthday, emailAddress, country, region)
 
 	// Marshal the doctor object to JSON
 	doctorJSON, err := json.Marshal(doctor)
@@ -1550,45 +1626,49 @@ func (s *SmartContract) GetDoctor(ctx contractapi.TransactionContextInterface, i
 }
 
 type Pathologist struct {
-	PathologistID        string              `json:"pathologistID"`
-	Name                 string              `json:"name"`
-	LicenseNumber        int                 `json:"licenseNumber"`
-	SpecializationArea   string              `json:"specializationArea"`
-	TotalExperience      int                 `json:"totalExperience"`
-	IsAdded              bool                `json:"isAdded"`
-	PatientToPathologist []string            `json:"patientToPathologist"` // allPatientsAddressSharedToPathologist
-	UserType             string              `json:"userType"`
-	ProfilePic           string              `json:"profilePic"`
-	Birthday             string              `json:"birthday"`
-	UserData             map[string]UserData `json:"userData"`
-	SenderDoctor         []map[string]map[string][]string            `json:"senderDoctor"` // allDoctorsAddressSharedToPathologist
-	ReceiverDoctor       []map[string]map[string][]string            `json:"receiverDoctor"`
-	EmailAddress         string              `json:"emailAddress"`
-	TreatedPatient       []map[string]map[string][]string            `json:"treatedPatient"`
+	PathologistID        string                           `json:"pathologistID"`
+	Name                 string                           `json:"name"`
+	LicenseNumber        int                              `json:"licenseNumber"`
+	SpecializationArea   string                           `json:"specializationArea"`
+	TotalExperience      int                              `json:"totalExperience"`
+	IsAdded              bool                             `json:"isAdded"`
+	PatientToPathologist []string                         `json:"patientToPathologist"` // allPatientsAddressSharedToPathologist
+	UserType             string                           `json:"userType"`
+	ProfilePic           string                           `json:"profilePic"`
+	Birthday             string                           `json:"birthday"`
+	UserData             map[string]UserData              `json:"userData"`
+	SenderDoctor         []map[string]map[string][]string `json:"senderDoctor"` // allDoctorsAddressSharedToPathologist
+	ReceiverDoctor       []map[string]map[string][]string `json:"receiverDoctor"`
+	EmailAddress         string                           `json:"emailAddress"`
+	TreatedPatient       []map[string]map[string][]string `json:"treatedPatient"`
+	Country              string                           `json:"country"`
+	Region               string                           `json:"region"`
 }
 
-func NewPathologist(pathologistID string, name string, licenseNumber int, specializationArea string, totalExperience int, birthday string, emailAddress string) Pathologist {
+func NewPathologist(pathologistID string, name string, licenseNumber int, specializationArea string, totalExperience int, birthday string, emailAddress string, country string, region string) Pathologist {
 	return Pathologist{
 		PathologistID:        pathologistID,
 		Name:                 name,
 		LicenseNumber:        licenseNumber,
 		SpecializationArea:   specializationArea,
 		TotalExperience:      totalExperience,
-		IsAdded:              true,          // Default to true
-		PatientToPathologist: []string{},    // Initialize as an empty slice
-		UserType:             "pathologist", // Default user           // Default profile picture
+		IsAdded:              true,
+		PatientToPathologist: []string{},
+		UserType:             "pathologist",
 		Birthday:             birthday,
 		UserData:             map[string]UserData{},
-		SenderDoctor:[]map[string]map[string][]string{}, // Initialize as an empty slice
-		ReceiverDoctor:[]map[string]map[string][]string{}, // Initialize as an empty slice
+		SenderDoctor:         []map[string]map[string][]string{},
+		ReceiverDoctor:       []map[string]map[string][]string{},
 		EmailAddress:         emailAddress,
 		TreatedPatient:       []map[string]map[string][]string{},
+		Country:              country,
+		Region:               region,
 	}
 }
 
-func (s *SmartContract) SetPathologist(ctx contractapi.TransactionContextInterface, pathologistID string, name string, licenseNumber int, specializationArea string, totalExperience int, birthday string, emailAddress string) error {
+func (s *SmartContract) SetPathologist(ctx contractapi.TransactionContextInterface, pathologistID string, name string, licenseNumber int, specializationArea string, totalExperience int, birthday string, emailAddress string, country string, region string) error {
 	// Create a new Pathologist object
-	pathologist := NewPathologist(pathologistID, name, licenseNumber, specializationArea, totalExperience, birthday, emailAddress)
+	pathologist := NewPathologist(pathologistID, name, licenseNumber, specializationArea, totalExperience, birthday, emailAddress, country, region)
 
 	// Marshal the pathologist object to JSON
 	pathologistJSON, err := json.Marshal(pathologist)
@@ -1644,7 +1724,7 @@ func (s *SmartContract) GetPathologist(ctx contractapi.TransactionContextInterfa
 	return pathologist, nil
 }
 
- type MedicalResearchLab struct {
+type MedicalResearchLab struct {
 	LabID           string              `json:"labID"`
 	Name            string              `json:"name"`
 	LicenseID       int                 `json:"licenseID"`
@@ -1658,9 +1738,11 @@ func (s *SmartContract) GetPathologist(ctx contractapi.TransactionContextInterfa
 	EmailAddress    string              `json:"emailAddress"`
 	AdminToMedRcLab []string            `json:"adminToMedRcLab"`
 	Disease         map[string]bool     `json:"disease"`
+	Country         string              `json:"country"`
+	Region          string              `json:"region"`
 }
 
-func NewMedicalResearchLab(labID string, name string, licenseID int, researchArea string, labRating float32, emailAddress string) MedicalResearchLab {
+func NewMedicalResearchLab(labID string, name string, licenseID int, researchArea string, labRating float32, emailAddress string, country string, region string) MedicalResearchLab {
 	return MedicalResearchLab{
 		LabID:           labID,
 		Name:            name,
@@ -1670,16 +1752,18 @@ func NewMedicalResearchLab(labID string, name string, licenseID int, researchAre
 		IsAdded:         true,
 		UserType:        "medicalResearchLab",
 		EmailAddress:    emailAddress,
-		LabReport:       make(map[string][]string), // Default to an empty list        // Default to an empty string
+		LabReport:       make(map[string][]string),
 		AdminToMedRcLab: []string{},
 		Prescriptions:   make(map[string][]string),
 		Disease:         make(map[string]bool),
+		Country:         country,
+		Region:          region,
 	}
 }
 
-func (s *SmartContract) SetMedicalResearchLab(ctx contractapi.TransactionContextInterface, labID string, name string, licenseID int, researchArea string, labRating float32, emailAddress string) error {
+func (s *SmartContract) SetMedicalResearchLab(ctx contractapi.TransactionContextInterface, labID string, name string, licenseID int, researchArea string, labRating float32, emailAddress string, country string, region string) error {
 	// Create a new MedicalResearchLab object
-	medicalResearchLab := NewMedicalResearchLab(labID, name, licenseID, researchArea, labRating, emailAddress)
+	medicalResearchLab := NewMedicalResearchLab(labID, name, licenseID, researchArea, labRating, emailAddress, country, region)
 
 	// Marshal the medicalResearchLab object to JSON
 	medicalResearchLabJSON, err := json.Marshal(medicalResearchLab)
@@ -1782,11 +1866,12 @@ type PharmacyCompany struct {
 	ProfilePic         string              `json:"profilePic"`
 	EmailAddress       string              `json:"emailAddress"`
 	Prescriptions      map[string][]string `json:"prescriptions"`
-	AdminToPharmacy    []string            `json:"adminToPharmacy"` // zzz
-
+	AdminToPharmacy    []string            `json:"adminToPharmacy"`
+	Country            string              `json:"country"`
+	Region             string              `json:"region"`
 }
 
-func NewPharmacyCompany(companyID string, name string, licenseID int, productInformation string, pharmacyRating float32, emailAddress string) PharmacyCompany {
+func NewPharmacyCompany(companyID string, name string, licenseID int, productInformation string, pharmacyRating float32, emailAddress string, country string, region string) PharmacyCompany {
 	return PharmacyCompany{
 		CompanyID:          companyID,
 		Name:               name,
@@ -1799,11 +1884,13 @@ func NewPharmacyCompany(companyID string, name string, licenseID int, productInf
 		EmailAddress:       emailAddress,
 		AdminToPharmacy:    []string{},
 		Prescriptions:      make(map[string][]string),
+		Country:            country,
+		Region:             region,
 	}
 }
-func (s *SmartContract) SetPharmacyCompany(ctx contractapi.TransactionContextInterface, companyID string, name string, licenseID int, productInformation string, pharmacyRating float32, emailAddress string) error {
+func (s *SmartContract) SetPharmacyCompany(ctx contractapi.TransactionContextInterface, companyID string, name string, licenseID int, productInformation string, pharmacyRating float32, emailAddress string, country string, region string) error {
 	// Create a new PharmacyCompany object
-	pharmacyCompany := NewPharmacyCompany(companyID, name, licenseID, productInformation, pharmacyRating, emailAddress)
+	pharmacyCompany := NewPharmacyCompany(companyID, name, licenseID, productInformation, pharmacyRating, emailAddress, country, region)
 
 	// Marshal the pharmacyCompany object to JSON
 	pharmacyCompanyJSON, err := json.Marshal(pharmacyCompany)
@@ -2408,7 +2495,8 @@ func removeUserFromList(users []string, userId string) []string {
 	return newUsers
 }
 
-func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInterface, userId string, disease string) error {
+
+func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInterface, userId string, disease string, adminId string) error {
 	// Retrieve all user accounts
 	accounts, err := s.GetAccounts(ctx)
 	if err != nil {
@@ -2420,7 +2508,15 @@ func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInt
 	if !exists || (userRole != string(TMedicalResearchLab) && userRole != string(TPharmacyCompany)) {
 		return fmt.Errorf("user ID=%s is not authorized (must be a PharmacyCompany or MedicalResearchLab)", userId)
 	}
+	admin, err := s.GetAdmin(ctx, adminId)
+	if err != nil || !admin.IsAdded {
+		return fmt.Errorf("admin with ID=%s not found or not added", userId)
+	}
 
+	authorizedCountries := admin.AuthorizedCountries
+	if len(authorizedCountries) == 0 {
+		return fmt.Errorf("admin ID=%s has no authorized countries", userId)
+	}
 	// Retrieve all patients
 	patients, err := s.GetAllPatients(ctx)
 	if err != nil {
@@ -2434,7 +2530,9 @@ func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInt
 		if err != nil {
 			continue
 		}
-
+		if !contains(authorizedCountries, patient.Country) {
+			continue
+		}
 		if _, exists := patient.Prescriptions[disease]; exists {
 			patientIDs = append(patientIDs, patient.PatientID)
 		}
