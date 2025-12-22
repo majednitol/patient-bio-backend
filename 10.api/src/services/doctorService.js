@@ -39,7 +39,10 @@ export async function setDoctor(request) {
       data.BMDCNumber,
       data.yearOfExperience,
       data.birthday,
-      data.emailAddress
+      data.emailAddress,
+      data.country,
+      data.region
+
     );
     console.log("Transaction Result:", result);
 

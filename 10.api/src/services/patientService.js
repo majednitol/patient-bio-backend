@@ -49,7 +49,9 @@ export async function setPatient(request) {
       data.age,
       data.location,
       data.birthday,
-      data.emailAddress
+      data.emailAddress,
+      data.country,
+      data.region
     );
     console.log("Transaction Result:", result);
 

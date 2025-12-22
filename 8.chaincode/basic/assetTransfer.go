@@ -43,6 +43,329 @@ type AdminData struct {
 	TotalNumberOfPremiumMedicalResearchLab int `json:"totalNumberOfPremiumMedicalResearchLab"`
 }
 
+type GovermentBody struct {
+	CountryName         string `json:"countryName"`
+	CountryCode         string `json:"countryCode"`
+	GovermentID         string `json:"govermentID"`
+	RepresentativeName  string `json:"representativeName"`
+	EmailAddress        string `json:"emailAddress"`
+	RepresentativeEmail string `json:"representativeEmail"`
+	IsAdded             bool   `json:"isAdded"`
+	// Map for access given: key = giver country, value = list of countries it gave access to
+	AccessGiven map[string][]string `json:"accessGiven"`
+
+	// Map for access received: key = receiver country, value = list of countries from which it got access
+	AccessReceived map[string][]string `json:"accessReceived"`
+}
+
+// NewGovermentBody creates a new GovermentBody object with default values
+func NewGovermentBody(govermentID string, countryName string, countryCode string, representativeName string, emailAddress string, representativeEmail string) GovermentBody {
+	accessGiven := make(map[string][]string)
+	accessReceived := make(map[string][]string)
+
+	// Give self-access by default
+	accessGiven[countryName] = []string{countryName}
+	accessReceived[countryName] = []string{countryName}
+	return GovermentBody{
+		GovermentID:         govermentID,
+		CountryName:         countryName,
+		CountryCode:         countryCode,
+		RepresentativeName:  representativeName,
+		EmailAddress:        emailAddress,
+		RepresentativeEmail: representativeEmail,
+		IsAdded:             true,
+		AccessGiven:         accessGiven,
+		AccessReceived:      accessReceived,
+	} 
+}
+
+// SetGovermentBody stores a new GovermentBody in the ledger
+func (s *SmartContract) SetGovermentBody(ctx contractapi.TransactionContextInterface, govermentID string, countryName string, countryCode string, representativeName string, emailAddress string, representativeEmail string) error {
+	// Create the GovermentBody object
+	gb := NewGovermentBody(govermentID, countryName, countryCode, representativeName, emailAddress, representativeEmail)
+
+	// Marshal to JSON
+	gbJSON, err := json.Marshal(gb)
+	if err != nil {
+		return fmt.Errorf("failed to marshal GovermentBody: %v", err)
+	}
+
+	// Update accounts mapping
+	accounts, err := s.GetAccounts(ctx)
+	if err != nil {
+		return err
+	}
+	accounts[govermentID] = string(TGovermentBody)
+
+	// Store the updated accounts
+	if err := s.putState(ctx, "accounts", accounts); err != nil {
+		return fmt.Errorf("failed to store accounts update: %v", err)
+	}
+
+	// Store GovermentBody in ledger
+	return ctx.GetStub().PutState(govermentID, gbJSON)
+}
+
+// GetGovermentBody retrieves a GovermentBody from the ledger
+func (s *SmartContract) GetGovermentBody(ctx contractapi.TransactionContextInterface, govermentID string) (GovermentBody, error) {
+	gbJSON, err := ctx.GetStub().GetState(govermentID)
+	if err != nil {
+		return GovermentBody{}, fmt.Errorf("failed to read from world state: %v", err)
+	}
+
+	if gbJSON == nil {
+		return GovermentBody{}, fmt.Errorf("GovermentBody with ID %s does not exist", govermentID)
+	}
+
+	var gb GovermentBody
+	if err := json.Unmarshal(gbJSON, &gb); err != nil {
+		return GovermentBody{}, fmt.Errorf("failed to unmarshal GovermentBody data: %v", err)
+	}
+
+	// Initialize maps if nil (just in case)
+	if gb.AccessGiven == nil {
+		gb.AccessGiven = make(map[string][]string)
+	}
+	if gb.AccessReceived == nil {
+		gb.AccessReceived = make(map[string][]string)
+	}
+
+	return gb, nil
+}
+
+func (s *SmartContract) GrantAccess(
+	ctx contractapi.TransactionContextInterface,
+	giverCountryID string,
+	receiverCountryID string,
+) error {
+	// Prevent self-access
+	if giverCountryID == receiverCountryID {
+		return fmt.Errorf("giver and receiver cannot be the same country")
+	}
+
+	// --- Load Giver Country ---
+	giverBytes, err := ctx.GetStub().GetState(giverCountryID)
+	if err != nil {
+		return fmt.Errorf("failed to read giver country: %v", err)
+	}
+	if giverBytes == nil {
+		return fmt.Errorf("giver country %s not found", giverCountryID)
+	}
+
+	var giver GovermentBody
+	if err := json.Unmarshal(giverBytes, &giver); err != nil {
+		return fmt.Errorf("failed to unmarshal giver country: %v", err)
+	}
+
+	// --- Load Receiver Country ---
+	receiverBytes, err := ctx.GetStub().GetState(receiverCountryID)
+	if err != nil {
+		return fmt.Errorf("failed to read receiver country: %v", err)
+	}
+	if receiverBytes == nil {
+		return fmt.Errorf("receiver country %s not found", receiverCountryID)
+	}
+
+	var receiver GovermentBody
+	if err := json.Unmarshal(receiverBytes, &receiver); err != nil {
+		return fmt.Errorf("failed to unmarshal receiver country: %v", err)
+	}
+
+	// --- Initialize maps if nil ---
+	if giver.AccessGiven == nil {
+		giver.AccessGiven = make(map[string][]string)
+	}
+	if receiver.AccessReceived == nil {
+		receiver.AccessReceived = make(map[string][]string)
+	}
+
+	// --- Update maps ---
+	if !contains(giver.AccessGiven[giver.CountryName], receiver.CountryName) {
+		giver.AccessGiven[giver.CountryName] = append(giver.AccessGiven[giver.CountryName], receiver.CountryName)
+	}
+	if !contains(receiver.AccessReceived[receiver.CountryName], giver.CountryName) {
+		receiver.AccessReceived[receiver.CountryName] = append(receiver.AccessReceived[receiver.CountryName], giver.CountryName)
+	}
+
+	// --- Save maps separately in ledger ---
+	accessKey := "access_" + giver.CountryName
+	accessJSON, _ := json.Marshal(giver.AccessGiven[giver.CountryName])
+	if err := ctx.GetStub().PutState(accessKey, accessJSON); err != nil {
+		return fmt.Errorf("failed to store access given for %s: %v", giverCountryID, err)
+	}
+
+	receivedKey := "access_received_" + receiver.CountryName
+	receivedJSON, _ := json.Marshal(receiver.AccessReceived[receiver.CountryName])
+	if err := ctx.GetStub().PutState(receivedKey, receivedJSON); err != nil {
+		return fmt.Errorf("failed to store access received for %s: %v", receiver.CountryName, err)
+	}
+
+	// --- Save updated GovermentBody structs ---
+	giverUpdatedBytes, _ := json.Marshal(giver)
+	if err := ctx.GetStub().PutState(giverCountryID, giverUpdatedBytes); err != nil {
+		return fmt.Errorf("failed to update giver country: %v", err)
+	}
+
+	receiverUpdatedBytes, _ := json.Marshal(receiver)
+	if err := ctx.GetStub().PutState(receiverCountryID, receiverUpdatedBytes); err != nil {
+		return fmt.Errorf("failed to update receiver country: %v", err)
+	}
+
+	return nil
+}
+
+func (s *SmartContract) GetAccessGivenByCountry(
+	ctx contractapi.TransactionContextInterface,
+	countryName string,
+) ([]string, error) {
+
+	accessKey := "access_" + countryName
+
+	accessBytes, err := ctx.GetStub().GetState(accessKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read access given for %s: %v", countryName, err)
+	}
+
+	if accessBytes == nil {
+		return []string{}, nil // no access given yet
+	}
+
+	var accessList []string
+	if err := json.Unmarshal(accessBytes, &accessList); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal access given for %s: %v", countryName, err)
+	}
+
+	return accessList, nil
+}
+func (s *SmartContract) GetAccessReceivedByCountry(
+	ctx contractapi.TransactionContextInterface,
+	countryName string,
+) ([]string, error) {
+
+	receivedKey := "access_received_" + countryName
+
+	receivedBytes, err := ctx.GetStub().GetState(receivedKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read access received for %s: %v", countryName, err)
+	}
+
+	if receivedBytes == nil {
+		return []string{}, nil // no access received yet
+	}
+
+	var receivedList []string
+	if err := json.Unmarshal(receivedBytes, &receivedList); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal access received for %s: %v", countryName, err)
+	}
+
+	return receivedList, nil
+}
+
+func (s *SmartContract) RevokeAccess(
+	ctx contractapi.TransactionContextInterface,
+	giverCountryID string,
+	receiverCountryID string,
+) error {
+
+	// Prevent self-revoke
+	if giverCountryID == receiverCountryID {
+		return fmt.Errorf("giver and receiver cannot be the same country")
+	}
+
+	// --- Load Giver Country ---
+	giverBytes, err := ctx.GetStub().GetState(giverCountryID)
+	if err != nil {
+		return fmt.Errorf("failed to read giver country: %v", err)
+	}
+	if giverBytes == nil {
+		return fmt.Errorf("giver country %s not found", giverCountryID)
+	}
+
+	var giver GovermentBody
+	if err := json.Unmarshal(giverBytes, &giver); err != nil {
+		return fmt.Errorf("failed to unmarshal giver country: %v", err)
+	}
+
+	if giver.AccessGiven == nil {
+		giver.AccessGiven = make(map[string][]string)
+	}
+	if _, ok := giver.AccessGiven[giverCountryID]; !ok {
+		giver.AccessGiven[giverCountryID] = []string{}
+	}
+
+	// --- Load Receiver Country ---
+	receiverBytes, err := ctx.GetStub().GetState(receiverCountryID)
+	if err != nil {
+		return fmt.Errorf("failed to read receiver country: %v", err)
+	}
+	if receiverBytes == nil {
+		return fmt.Errorf("receiver country %s not found", receiverCountryID)
+	}
+
+	var receiver GovermentBody
+	if err := json.Unmarshal(receiverBytes, &receiver); err != nil {
+		return fmt.Errorf("failed to unmarshal receiver country: %v", err)
+	}
+
+	if receiver.AccessReceived == nil {
+		receiver.AccessReceived = make(map[string][]string)
+	}
+	if _, ok := receiver.AccessReceived[receiverCountryID]; !ok {
+		receiver.AccessReceived[receiverCountryID] = []string{}
+	}
+
+	// --- Remove from Giver's AccessGiven ---
+	giver.AccessGiven[giver.CountryName] = removeString(giver.AccessGiven[giver.CountryName], receiver.CountryName)
+
+	// --- Remove from Receiver's AccessReceived ---
+	receiver.AccessReceived[receiver.CountryName] = removeString(receiver.AccessReceived[receiver.CountryName], giver.CountryName)
+
+	// --- Save Giver ---
+	giverUpdatedBytes, err := json.Marshal(giver)
+	if err != nil {
+		return fmt.Errorf("failed to marshal giver country: %v", err)
+	}
+	if err := ctx.GetStub().PutState(giverCountryID, giverUpdatedBytes); err != nil {
+		return fmt.Errorf("failed to update giver country: %v", err)
+	}
+
+	// --- Save Receiver ---
+	receiverUpdatedBytes, err := json.Marshal(receiver)
+	if err != nil {
+		return fmt.Errorf("failed to marshal receiver country: %v", err)
+	}
+	if err := ctx.GetStub().PutState(receiverCountryID, receiverUpdatedBytes); err != nil {
+		return fmt.Errorf("failed to update receiver country: %v", err)
+	}
+
+	// --- Update separate AccessGiven key ---
+	accessKey := "access_" + giver.CountryName
+	accessJSON, _ := json.Marshal(giver.AccessGiven[giver.CountryName])
+	if err := ctx.GetStub().PutState(accessKey, accessJSON); err != nil {
+		return fmt.Errorf("failed to update access given for %s: %v", giver.CountryName, err)
+	}
+
+	// --- Update separate AccessReceived key ---
+	receivedKey := "access_received_" + receiver.CountryName
+	receivedJSON, _ := json.Marshal(receiver.AccessReceived[receiver.CountryName])
+	if err := ctx.GetStub().PutState(receivedKey, receivedJSON); err != nil {
+		return fmt.Errorf("failed to update access received for %s: %v", receiver.CountryName, err)
+	}
+
+	return nil
+}
+
+// Helper function to remove a string from a slice
+func removeString(slice []string, str string) []string {
+	result := []string{}
+	for _, s := range slice {
+		if s != str {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
 func (s *SmartContract) GetAllAdmindata(ctx contractapi.TransactionContextInterface) (AdminData, error) {
 
 	adminDataJSON, err := ctx.GetStub().GetState("user-analytics")
@@ -99,8 +422,7 @@ func NewAdmin(adminID string, name string, gender string, birthday string, email
 		SharedAllUsersAddress: []string{},
 		Country:               country,
 		Region:                region,
-		AuthorizedCountries: []string{country},
-		
+		AuthorizedCountries:   []string{country},
 	}
 }
 func (s *SmartContract) SetAdmin(ctx contractapi.TransactionContextInterface, adminID string, name string, gender string, birthday string, emailAddress string, location string, country string, region string) error {
@@ -229,7 +551,6 @@ func (s *SmartContract) SetAuthorizedCountries(
 
 	return nil
 }
-
 
 func (s *SmartContract) GetAdmin(ctx contractapi.TransactionContextInterface, id string) (Admin, error) {
 	// Retrieve the admin data from the world state using the provided admin ID
@@ -1282,8 +1603,6 @@ func contains(slice []string, value string) bool {
 	return false
 }
 
-
-
 func (s *SmartContract) ShareData(
 	ctx contractapi.TransactionContextInterface,
 	sUserId string, rUserId string,
@@ -1968,7 +2287,7 @@ func (s *SmartContract) ConnectedAccountType(ctx contractapi.TransactionContextI
 	}
 
 	switch EntityType(accountType) {
-	case TDoctor, TPathologist, TAdmin, TPatient, TMedicalResearchLab, TPharmacyCompany:
+	case TDoctor, TPathologist, TAdmin, TPatient, TMedicalResearchLab, TPharmacyCompany, TGovermentBody:
 		return accountType, nil
 	default:
 		return string(TUnknown), nil
@@ -2200,8 +2519,9 @@ const (
 	TMedicalResearchLab EntityType = "MedicalResearchLab"
 	TPharmacyCompany    EntityType = "PharmacyCompany"
 
-	TPatient EntityType = "Patient"
-	TAdmin   EntityType = "Admin"
+	TPatient       EntityType = "Patient"
+	TAdmin         EntityType = "Admin"
+	TGovermentBody EntityType = "GovermentBody"
 )
 
 func (s *SmartContract) GiveConfirmation(ctx contractapi.TransactionContextInterface, userId string, adminUserId string) error {
@@ -2495,72 +2815,211 @@ func removeUserFromList(users []string, userId string) []string {
 	return newUsers
 }
 
+// func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInterface, userId string, disease string, adminId string) error {
+// 	// Retrieve all user accounts
+// 	accounts, err := s.GetAccounts(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to retrieve accounts: %v", err)
+// 	}
 
-func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInterface, userId string, disease string, adminId string) error {
-	// Retrieve all user accounts
+// 	// Validate user role
+// 	userRole, exists := accounts[userId]
+// 	if !exists || (userRole != string(TMedicalResearchLab) && userRole != string(TPharmacyCompany)) {
+// 		return fmt.Errorf("user ID=%s is not authorized (must be a PharmacyCompany or MedicalResearchLab)", userId)
+// 	}
+
+// 	admin, err := s.GetAdmin(ctx, adminId)
+// 	if err != nil || !admin.IsAdded {
+// 		return fmt.Errorf("admin with ID=%s not found or not added", userId)
+// 	}
+
+// 	authorizedCountries := admin.AuthorizedCountries
+// 	if len(authorizedCountries) == 0 {
+// 		return fmt.Errorf("admin ID=%s has no authorized countries", userId)
+// 	}
+// 	// Retrieve all patients
+// 	patients, err := s.GetAllPatients(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to retrieve all patients: %v", err)
+// 	}
+
+// 	// Filter patients based on the requested disease
+// 	var patientIDs []string
+// 	for _, patientID := range patients {
+// 		patient, err := s.GetPatient(ctx, patientID)
+// 		if err != nil {
+// 			continue
+// 		}
+// 		if !contains(authorizedCountries, patient.Country) {
+// 			continue
+// 		}
+// 		if _, exists := patient.Prescriptions[disease]; exists {
+// 			patientIDs = append(patientIDs, patient.PatientID)
+// 		}
+// 	}
+
+// 	if len(patientIDs) == 0 {
+// 		return fmt.Errorf("no patients found with prescriptions for disease: %s", disease)
+// 	}
+
+// 	// Validate user role
+// 	switch userRole {
+// 	case string(TMedicalResearchLab):
+// 		lab, err := s.GetMedicalResearchLab(ctx, userId)
+// 		if err != nil || !lab.IsAdded {
+// 			return fmt.Errorf("MedicalResearchLab with ID=%s not found or not added", userId)
+// 		}
+
+// 	case string(TPharmacyCompany):
+// 		pharmacy, err := s.GetPharmacyCompany(ctx, userId)
+// 		if err != nil || !pharmacy.IsAdded {
+// 			return fmt.Errorf("PharmacyCompany with ID=%s not found or not added", userId)
+// 		}
+
+// 	default:
+// 		return fmt.Errorf("only MedicalResearchLab or PharmacyCompany can execute this transaction")
+// 	}
+
+// 	// Retrieve existing pending requests
+// 	pendingRequestedUsers, err := s.GetPendingRequestedUser(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to retrieve pending requested users: %v", err)
+// 	}
+
+// 	pendingRequesterUsers, err := s.GetPendingRequesterUser(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to retrieve pending requester users: %v", err)
+// 	}
+
+// 	// Ensure user entry exists in pendingRequesterUsers
+// 	if _, exists := pendingRequesterUsers[userId]; !exists {
+// 		pendingRequesterUsers[userId] = make(map[string][]string)
+// 	}
+
+// 	// Add only new patient IDs that are not already pending
+// 	var newPatientIDs []string
+// 	if existingPatients, exists := pendingRequesterUsers[userId][disease]; exists {
+// 		for _, patientID := range patientIDs {
+// 			if !contains(existingPatients, patientID) {
+// 				newPatientIDs = append(newPatientIDs, patientID)
+// 			}
+// 		}
+// 	} else {
+// 		newPatientIDs = append(newPatientIDs, patientIDs...)
+// 	}
+
+// 	if len(newPatientIDs) == 0 {
+// 		return fmt.Errorf("all selected patients for disease %s are already pending for user ID=%s", disease, userId)
+// 	}
+
+// 	// Update pendingRequesterUsers
+// 	pendingRequesterUsers[userId][disease] = append(pendingRequesterUsers[userId][disease], newPatientIDs...)
+
+// 	// Update pendingRequestedUsers
+// 	for _, patientID := range newPatientIDs {
+// 		if _, exists := pendingRequestedUsers[patientID]; !exists {
+// 			pendingRequestedUsers[patientID] = make(map[string][]string)
+// 		}
+// 		pendingRequestedUsers[patientID][disease] = append(pendingRequestedUsers[patientID][disease], userId)
+// 	}
+
+// 	// Store the updated pending requests
+// 	if err := s.putState(ctx, PendingRequestedUserKey, pendingRequestedUsers); err != nil {
+// 		return fmt.Errorf("failed to store pending requested users: %v", err)
+// 	}
+
+// 	if err := s.putState(ctx, PendingRequesterUserKey, pendingRequesterUsers); err != nil {
+// 		return fmt.Errorf("failed to store pending requester users: %v", err)
+// 	}
+
+// 	return nil
+// }
+
+func (s *SmartContract) RequestPatientData(
+	ctx contractapi.TransactionContextInterface,
+	userId string,
+	disease string,
+) error {
+
+	// --- Retrieve all user accounts ---
 	accounts, err := s.GetAccounts(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve accounts: %v", err)
 	}
 
-	// Validate user role
+	// --- Validate user role ---
 	userRole, exists := accounts[userId]
 	if !exists || (userRole != string(TMedicalResearchLab) && userRole != string(TPharmacyCompany)) {
 		return fmt.Errorf("user ID=%s is not authorized (must be a PharmacyCompany or MedicalResearchLab)", userId)
 	}
-	admin, err := s.GetAdmin(ctx, adminId)
-	if err != nil || !admin.IsAdded {
-		return fmt.Errorf("admin with ID=%s not found or not added", userId)
-	}
 
-	authorizedCountries := admin.AuthorizedCountries
-	if len(authorizedCountries) == 0 {
-		return fmt.Errorf("admin ID=%s has no authorized countries", userId)
-	}
-	// Retrieve all patients
-	patients, err := s.GetAllPatients(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve all patients: %v", err)
-	}
-
-	// Filter patients based on the requested disease
-	var patientIDs []string
-	for _, patientID := range patients {
-		patient, err := s.GetPatient(ctx, patientID)
-		if err != nil {
-			continue
-		}
-		if !contains(authorizedCountries, patient.Country) {
-			continue
-		}
-		if _, exists := patient.Prescriptions[disease]; exists {
-			patientIDs = append(patientIDs, patient.PatientID)
-		}
-	}
-
-	if len(patientIDs) == 0 {
-		return fmt.Errorf("no patients found with prescriptions for disease: %s", disease)
-	}
-
-	// Validate user role
+	// --- Get requester country ---
+	var userCountry string
 	switch userRole {
 	case string(TMedicalResearchLab):
 		lab, err := s.GetMedicalResearchLab(ctx, userId)
 		if err != nil || !lab.IsAdded {
 			return fmt.Errorf("MedicalResearchLab with ID=%s not found or not added", userId)
 		}
+		userCountry = lab.Country
 
 	case string(TPharmacyCompany):
 		pharmacy, err := s.GetPharmacyCompany(ctx, userId)
 		if err != nil || !pharmacy.IsAdded {
 			return fmt.Errorf("PharmacyCompany with ID=%s not found or not added", userId)
 		}
-
-	default:
-		return fmt.Errorf("only MedicalResearchLab or PharmacyCompany can execute this transaction")
+		userCountry = pharmacy.Country
 	}
 
-	// Retrieve existing pending requests
+	// --- Retrieve all patients ---
+	patients, err := s.GetAllPatients(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve all patients: %v", err)
+	}
+
+	var patientIDs []string
+	for _, patientID := range patients {
+		patient, err := s.GetPatient(ctx, patientID)
+		if err != nil {
+			continue
+		}
+
+		// --- Load access_received key for patient country ---
+		receivedKey := "access_received_" + userCountry
+		accessBytes, err := ctx.GetStub().GetState(receivedKey)
+		if err != nil {
+			return fmt.Errorf("failed to read access for patient country %s: %v", userCountry, err)
+		}
+
+		// --- Skip if no access granted ---
+		if accessBytes == nil {
+			continue
+		}
+
+		// --- Unmarshal access list ---
+		var accessList []string
+		if err := json.Unmarshal(accessBytes, &accessList); err != nil {
+			return fmt.Errorf("failed to unmarshal access list for %s: %v", userCountry, err)
+		}
+
+		// --- Check if requester's country is in the access list ---
+		if !contains(accessList, patient.Country) {
+			continue
+		}
+
+		// --- Check if patient has prescription for the disease ---
+		if _, exists := patient.Prescriptions[disease]; !exists {
+			continue
+		}
+
+		patientIDs = append(patientIDs, patient.PatientID)
+	}
+
+	if len(patientIDs) == 0 {
+		return fmt.Errorf("no patients found with prescriptions for disease: %s accessible by your country", disease)
+	}
+
+	// --- Handle pending requests ---
 	pendingRequestedUsers, err := s.GetPendingRequestedUser(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve pending requested users: %v", err)
@@ -2571,12 +3030,10 @@ func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("failed to retrieve pending requester users: %v", err)
 	}
 
-	// Ensure user entry exists in pendingRequesterUsers
 	if _, exists := pendingRequesterUsers[userId]; !exists {
 		pendingRequesterUsers[userId] = make(map[string][]string)
 	}
 
-	// Add only new patient IDs that are not already pending
 	var newPatientIDs []string
 	if existingPatients, exists := pendingRequesterUsers[userId][disease]; exists {
 		for _, patientID := range patientIDs {
@@ -2592,10 +3049,8 @@ func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("all selected patients for disease %s are already pending for user ID=%s", disease, userId)
 	}
 
-	// Update pendingRequesterUsers
 	pendingRequesterUsers[userId][disease] = append(pendingRequesterUsers[userId][disease], newPatientIDs...)
 
-	// Update pendingRequestedUsers
 	for _, patientID := range newPatientIDs {
 		if _, exists := pendingRequestedUsers[patientID]; !exists {
 			pendingRequestedUsers[patientID] = make(map[string][]string)
@@ -2603,11 +3058,10 @@ func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInt
 		pendingRequestedUsers[patientID][disease] = append(pendingRequestedUsers[patientID][disease], userId)
 	}
 
-	// Store the updated pending requests
+	// --- Save updated pending requests ---
 	if err := s.putState(ctx, PendingRequestedUserKey, pendingRequestedUsers); err != nil {
 		return fmt.Errorf("failed to store pending requested users: %v", err)
 	}
-
 	if err := s.putState(ctx, PendingRequesterUserKey, pendingRequesterUsers); err != nil {
 		return fmt.Errorf("failed to store pending requester users: %v", err)
 	}

@@ -12,6 +12,20 @@ export async function getAdmin(request) {
   }
 }
 
+export async function getAuthorizedCountries(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetAuthorizedCountries", userId);
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
 export async function getPendingUser(request) {
   try {
     const userId = request.userId
@@ -81,7 +95,9 @@ export async function setAdmin(request) {
       data.gender,
       data.birthday,
       data.emailAddress,
-      data.location
+      data.location,
+      data.country,
+      data.region
     );
     console.log("Transaction Result:", result);
 
@@ -115,6 +131,25 @@ export async function allAdmin(request) {
     console.log(error)
   }
 }
+
+export async function setAuthorizedCountries(request) {
+  try {
+    const adminId = request.adminId
+    const contract = await smartContract(request, adminId)
+    let result = await contract.submitTransaction(
+      "SetAuthorizedCountries",
+      adminId,
+      request.countries
+    );
+    console.log("Transaction Result:", result);
+
+    return result;
+  } catch (error) {
+    console.error("Error in createAsset:", error);
+    throw error;
+  }
+}
+
 export async function giveConfirmation(request) {
   try {
     

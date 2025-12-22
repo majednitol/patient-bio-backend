@@ -41,9 +41,10 @@ export async function RequestPatientData(request) {
     try {
       const companyID = request.companyID
       const disease = request.disease
+      const adminID = request.adminID
       const contract = await smartContract(request, companyID)
       let result = await contract.submitTransaction(
-        "RequestPatientData", companyID, disease
+        "RequestPatientData", companyID, disease, adminID
       );
       console.log("Transaction Result:", result);
   

@@ -47,3 +47,49 @@ kubectl port-forward services/peer0-org2 5983:5984
 go to nfs_clientshare
 
 ./scripts/ccp.sh 
+
+
+  peer chaincode query \
+  -C mychannel \
+  -n basic \
+  -c '{"function":"GetAccounts"} '
+
+
+  peer chaincode query \
+  -C mychannel \
+  -n basic \
+  -c '{"Args":["GetAccounts"]}'
+
+
+
+  peer chaincode invoke \
+  -o orderer:7050 \
+  --tls true \
+  --cafile $ORDERER_CA \
+  -C mychannel \
+  -n basic \
+  --peerAddresses peer0-patient:7051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/patient.rono.com/peers/peer0.patient.rono.com/tls/ca.crt \
+  --peerAddresses peer0-doctor:9051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/doctor.rono.com/peers/peer0.doctor.rono.com/tls/ca.crt \
+  --peerAddresses peer0-pathologist:11051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/pathologist.rono.com/peers/peer0.pathologist.rono.com/tls/ca.crt \
+  --peerAddresses peer0-pharmacy:12051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/pharmacy.rono.com/peers/peer0.pharmacy.rono.com/tls/ca.crt \
+  --peerAddresses peer0-medlab:13051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/medlab.rono.com/peers/peer0.medlab.rono.com/tls/ca.crt \
+  --peerAddresses peer0-admin:14051 \
+  --tlsRootCertFiles /organizations/peerOrganizations/admin.rono.com/peers/peer0.admin.rono.com/tls/ca.crt \
+  -c '{"function":"SetAdmin","Args":["222","Admin One","Male","1990-01-01","admin1@example.com","Dhaka","Bangladesh","Dhaka"]}' \
+  --waitForEvent
+
+  peer chaincode query \
+  -C mychannel \
+  -n basic \
+  -c '{"Args":["GetAccounts"]}'
+
+
+  peer chaincode query \
+  -C mychannel \
+  -n basic \
+  -c '{"function":"GetPatient","Args":["P001"]}'

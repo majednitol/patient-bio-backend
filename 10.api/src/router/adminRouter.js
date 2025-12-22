@@ -1,6 +1,6 @@
 
 import express from 'express' 
-import { addDisease, adminData, confirmation, createAdminAccount, getAllAdmin, getAllAdmindata, getDisease, isConfirmed, pendingUser, shareDataByAdmin } from '../controllers/adminController.js';
+import { addDisease, adminData, confirmation, createAdminAccount, getAllAdmin, getAllAdmindata, getDisease, isConfirmed, pendingUser, shareDataByAdmin, AddAuthorizedCountries, authorizedCountries } from '../controllers/adminController.js';
 import authenticate from '../middleware/authenticate.js';
 
 const adminRouter = express.Router()
@@ -14,5 +14,7 @@ adminRouter.get('/get-diseases', authenticate, getDisease);
 adminRouter.get('/pending-user', authenticate, pendingUser);
 adminRouter.get('/isConfirmed', authenticate, isConfirmed);
 adminRouter.post('/add-disease', authenticate, addDisease);
-
+adminRouter.post('/add-disease', authenticate, addDisease);
+adminRouter.post('/add-authorized-countries', authenticate, AddAuthorizedCountries);
+adminRouter.get('/get-authorized-countries', authenticate, authorizedCountries);
 export default adminRouter

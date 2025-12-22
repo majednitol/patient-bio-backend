@@ -97,7 +97,8 @@ export async function requestPatientData(req, res) {
             "channelName": channelName,
             "chaincodeName": chaincodeName,
             "companyID": req.userId,
-            "disease": req.body.disease
+            "disease": req.body.disease,
+            "adminID": req.body.adminID
         }
         console.log("payload", payload)
         let result = await RequestPatientData(payload);

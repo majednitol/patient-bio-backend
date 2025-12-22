@@ -25,7 +25,9 @@ export async function setPathologist(request) {
       data.specializationArea,
       data.totalExperience,
       data.birthday,
-      data.emailAddress
+      data.emailAddress,
+      data.country,
+      data.region
     );
     console.log("Transaction Result:", result);
 
