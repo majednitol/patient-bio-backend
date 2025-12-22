@@ -12,6 +12,7 @@ import prescriptionRouter from "./router/prescriptionRouter.js";
 import profilePicRouter from "./router/profilePicRouter.js";
 import userRouter from "./router/userRouter.js";
 import dataRouter from "./router/dataRouter.js";
+import govRouter from "./router/GovermentBodyRouter.js";
 import gobalErrorHander from "./middleware/gobalErrorHander.js";
 app.use(cors())
 app.use(express.json());
@@ -26,6 +27,7 @@ app.use("/prescription", prescriptionRouter)
 app.use("/profilePic", profilePicRouter)
 app.use("/user", userRouter)
 app.use("/data", dataRouter)
+app.use("/gov",govRouter)
 app.use(gobalErrorHander)
 
 app.listen(4000, () => {
