@@ -1,6 +1,6 @@
 
 import express from 'express' 
-import { createGovermentBodyAccount, giveGrantAccess,RevokeAccess,govermentBodyData } from '../controllers/adminController.js';
+import { createGovermentBodyAccount, giveGrantAccess,RevokeAccess,govermentBodyData } from '../controllers/GovernmentBodyController.js';
 import authenticate from '../middleware/authenticate.js';
 
 const govRouter = express.Router()

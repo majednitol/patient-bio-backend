@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"nginx"},"name":"ingress","namespace":"default"},"spec":{"rules":[{"host":"www.patient-bio.majedurnitol.sit","http":{"paths":[{"backend":{"service":{"name":"api","port":{"number":4000}}},"path":"/","pathType":"Prefix"}]}}]}}
+    kubernetes.io/ingress.class: nginx
+  creationTimestamp: "2025-12-22T11:07:04Z"
+  generation: 1
+  name: ingress
+  namespace: default
+  resourceVersion: "2719325"
+  uid: b0f446f1-e665-40f8-bd01-2eddfde78016
+spec:
+  rules:
+  - host: www.patient-bio.majedurnitol.site
+    http:
+      paths:
+      - backend:
+          service:
+            name: api
+            port:
+              number: 4000
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer:
+    ingress:
+    - ip: 139.84.134.241

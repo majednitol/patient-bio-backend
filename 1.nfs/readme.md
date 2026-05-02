@@ -25,7 +25,9 @@ sudo chmod 777 -R chaincode connection-profile configtx organizations
  sudo chmod +x scripts -R 
  sudo rm -rf chaincode connection-profile scripts fabric-ca configtx organizations system-genesis-block scripts channel-artifacts state
 
-cp -R nfs_share/* backup_data/ cp -R backup_data/* nfs_share/ sudo chmod 777 chaincode connection-profile configtx organizations channel-artifacts system-genesis-block state -R
+cp -R nfs_share/* backup_data/
+cp -R backup_data/* nfs_share/ 
+sudo chmod 777 chaincode connection-profile configtx organizations channel-artifacts system-genesis-block state -R
 
 ## minikube NFS (local deployment)
 minikube start --disk-size=20g --memory=7835 --cpus=8 sudo chmod -R 777 ../nfs_share
@@ -41,6 +43,11 @@ vm kOIf6GHgrK ./scripts/ccp.sh
 
 kubectl delete deployments,services,jobs,configmaps,pv,pvc --all
 
-ssh root@139.84.218.48
+ssh root@144.202.26.76
+sudo ufw allow 2049/tcp
+sudo ufw allow 20048/tcp
+sudo ufw allow 32765/tcp
+sudo ufw allow 32766/tcp
+sudo ufw reload
 
-sudo mount -t nfs -o vers=4 139.84.218.48:/mnt/nfs_share /Users/majedurrahman/coding/nfs_clientshare
+sudo mount -t nfs -o vers=4 144.202.26.76:/mnt/nfs_share /Users/majedurrahman/coding/nfs_clientshare

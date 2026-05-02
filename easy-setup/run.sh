@@ -17,12 +17,12 @@ bash "$SCRIPT_DIR/../2.ca/deploy_ca.sh"
 
 echo "Running certificate creation job from 3.certificates"
 kubectl apply -f "$SCRIPT_DIR/../3.certifcates/job.yaml"
-sleep 70
+sleep 40
 kubectl logs job/create-certs -f
 
 echo "Running artifact generation job from 4.artifacts"
 kubectl apply -f "$SCRIPT_DIR/../4.artifacts/job.yaml"
-sleep 50
+sleep 30
 kubectl logs job/artifacts -f
 
 echo "Deploying Orderer components from 5.orderer"
@@ -35,7 +35,7 @@ echo "Deploying Peer nodes from 7.peer"
 bash "$SCRIPT_DIR/../7.peers/deploy_peers_org.sh"
 bash "$SCRIPT_DIR/../7.peers/deploy_cli_peers.sh"
 bash "$SCRIPT_DIR/../7.peers/peer.sh"
-sleep 10
+sleep 40
 echo "Packaging and preparing chaincode from 8.chaincode"
 
 bash "$SCRIPT_DIR/../8.chaincode/packaging_chaincode.sh"

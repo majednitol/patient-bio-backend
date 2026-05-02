@@ -31,7 +31,7 @@ export function buildCCPOrg(org) {
 
 export async function buildWallet() {
 	const url = process.env.COUCHDB_URL || 'http://admin:adminpw@couchdb:5982';
-	const dbName = process.env.COUCHDB_WALLET_DB || 'fabric_wallet';
+	const dbName = process.env.COUCHDB_WALLET_DB || 'wallet';
 
 	// Create database if not exists
 	const nanoClient = nano(url);

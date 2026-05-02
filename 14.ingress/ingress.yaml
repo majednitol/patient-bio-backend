@@ -9,7 +9,7 @@ metadata:
 spec:
   rules:
     # Rule for direct access using the ELB hostname
-    - host: www.patient-bio.majedurnitol.site
+    - host: www.patientbio.online
       http:
         paths:
           - path: /

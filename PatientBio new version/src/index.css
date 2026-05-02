@@ -1,0 +1,287 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 316 70% 58%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 83% 58%;
+
+    --radius: 1rem;
+
+    /* Diagnostic Center Healthcare Theme */
+    --diagnostic-primary: 173 58% 39%;
+    --diagnostic-secondary: 187 47% 55%;
+    --diagnostic-accent: 142 52% 45%;
+    --diagnostic-muted: 180 15% 96%;
+    --diagnostic-warm: 30 60% 96%;
+
+    /* Research Lab Theme */
+    --research-primary: 262 83% 58%;
+    --research-secondary: 168 67% 57%;
+    --research-muted: 262 15% 96%;
+    --gradient-research: linear-gradient(135deg, hsl(262 83% 58%), hsl(199 89% 48%));
+
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(316 70% 58%));
+    --gradient-accent: linear-gradient(135deg, hsl(199 89% 48%), hsl(262 83% 58%));
+    --gradient-diagnostic: linear-gradient(135deg, hsl(173 58% 39%), hsl(187 47% 55%));
+    --gradient-mesh: radial-gradient(at 0% 0%, hsl(262 83% 58% / 0.15) 0px, transparent 50%),
+                     radial-gradient(at 100% 0%, hsl(316 70% 58% / 0.15) 0px, transparent 50%),
+                     radial-gradient(at 100% 100%, hsl(199 89% 48% / 0.15) 0px, transparent 50%),
+                     radial-gradient(at 0% 100%, hsl(262 83% 58% / 0.1) 0px, transparent 50%);
+    --card-shadow: 0 1px 3px hsl(240 10% 4% / 0.05);
+    --card-shadow-lg: 0 10px 25px -5px hsl(240 10% 4% / 0.1), 0 8px 10px -6px hsl(240 10% 4% / 0.05);
+    --card-shadow-xl: 0 20px 35px -10px hsl(240 10% 4% / 0.15), 0 8px 15px -8px hsl(240 10% 4% / 0.08);
+
+    /* Portal accent colors */
+    --portal-general: 220 14% 46%;
+    --portal-patient: 199 89% 48%;
+    --portal-doctor: 262 83% 58%;
+    --portal-hospital: 25 95% 53%;
+    --portal-diagnostic: 173 58% 39%;
+    --portal-researcher: 316 70% 58%;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 8% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 8% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 316 70% 58%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 240 6% 15%;
+    --muted-foreground: 240 5% 65%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 20%;
+    --input: 240 6% 20%;
+    --ring: 262 83% 58%;
+
+     /* Diagnostic Center Healthcare Theme - Dark Mode */
+    --diagnostic-primary: 173 58% 45%;
+    --diagnostic-secondary: 187 47% 50%;
+    --diagnostic-accent: 142 52% 50%;
+    --diagnostic-muted: 180 10% 15%;
+    --diagnostic-warm: 30 30% 15%;
+
+    /* Portal accent colors - Dark Mode */
+    --portal-general: 220 14% 60%;
+    --portal-patient: 199 89% 55%;
+    --portal-doctor: 262 83% 65%;
+    --portal-hospital: 25 95% 60%;
+    --portal-diagnostic: 173 58% 50%;
+    --portal-researcher: 316 70% 65%;
+
+    /* Research Lab Theme - Dark Mode */
+    --research-primary: 262 83% 58%;
+    --research-secondary: 168 67% 57%;
+    --research-muted: 262 10% 15%;
+  }
+}
+
+/* Portal tab active styling */
+[data-portal-colored][data-state="active"] {
+  color: var(--_portal-color) !important;
+  background-color: var(--_portal-bg);
+  border-color: var(--_portal-border);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Global dark mode card depth — applies to all shadcn Card instances */
+  .dark [class*="rounded-lg"][class*="border"][class*="bg-card"],
+  .dark [class*="rounded-xl"][class*="border"][class*="bg-card"] {
+    border-color: hsl(var(--border) / 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Diagnostic Center Utility Classes */
+@layer components {
+  .diagnostic-card {
+    @apply rounded-xl border bg-card shadow-sm transition-all duration-200;
+    border-color: hsl(var(--diagnostic-primary) / 0.1);
+  }
+  
+  .diagnostic-card:hover {
+    box-shadow: 0 4px 12px hsl(var(--diagnostic-primary) / 0.08);
+    transform: translateY(-1px);
+  }
+  
+  .diagnostic-gradient {
+    background: linear-gradient(135deg, hsl(var(--diagnostic-primary)), hsl(var(--diagnostic-secondary)));
+  }
+  
+  .diagnostic-gradient-soft {
+    background: linear-gradient(135deg, hsl(var(--diagnostic-primary) / 0.1), hsl(var(--diagnostic-secondary) / 0.1));
+  }
+  
+  .diagnostic-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    background-color: hsl(var(--diagnostic-primary) / 0.1);
+    color: hsl(var(--diagnostic-primary));
+  }
+  
+  .diagnostic-stat-card {
+    @apply rounded-xl border bg-card p-6 transition-all duration-200;
+    border-color: hsl(var(--diagnostic-primary) / 0.08);
+  }
+  
+  .diagnostic-stat-card:hover {
+    border-color: hsl(var(--diagnostic-primary) / 0.2);
+    box-shadow: 0 2px 8px hsl(var(--diagnostic-primary) / 0.06);
+  }
+
+  /* Mobile Utility Classes */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Minimum touch target sizes (44px per Apple HIG) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Interactive card / button press feedback */
+  .press-feedback {
+    @apply transition-transform duration-100 active:scale-[0.97];
+  }
+
+  /* Better mobile scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar on mobile horizontal scroll */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Gradient fade for horizontal scroll indicators */
+  .scroll-fade-right::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(to right, transparent, hsl(var(--background)));
+    pointer-events: none;
+  }
+
+  .scroll-fade-left::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(to left, transparent, hsl(var(--background)));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Desktop optimization utilities */
+  .desktop-grid {
+    @apply grid gap-4 lg:gap-6;
+  }
+  
+  .desktop-two-col {
+    @apply lg:grid lg:grid-cols-[2fr_1fr] lg:gap-6 xl:gap-8;
+  }
+
+  .desktop-three-col {
+    @apply lg:grid lg:grid-cols-3 lg:gap-6;
+  }
+
+  .desktop-sidebar {
+    @apply lg:grid lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] lg:gap-6;
+  }
+
+  /* Enhanced chart sizing for desktop */
+  .chart-container {
+    @apply h-[240px] sm:h-[280px] lg:h-[350px] xl:h-[400px] 2xl:h-[450px];
+  }
+
+  /* Sticky table headers */
+  .sticky-table-header {
+    @apply sticky top-0 z-10 bg-background/95 backdrop-blur-sm;
+  }
+
+  /* Desktop panel layout for master/detail views */
+  .master-detail-layout {
+    @apply lg:grid lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.2fr_0.8fr] lg:gap-6;
+  }
+
+  /* Resizable panel enhancements */
+  .panel-resize-handle {
+    @apply hover:bg-primary/20 transition-colors;
+  }
+}

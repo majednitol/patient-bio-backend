@@ -105,7 +105,7 @@ spec:
             requests:
               memory: "400Mi"
               cpu: "300m"
-          image: majedur708/hlf-api:15.11
+          image: majedur708/hlf-api:15.22
           imagePullPolicy: Always
           env:
             - name: COUCHDB_URL
@@ -146,5 +146,5 @@ spec:
 
 # docker buildx build \
 #   --platform linux/amd64,linux/arm64 \
-#   -t majedur708/hlf-api:15.10 \
+#   -t majedur708/hlf-api:15.12 \
 #   --push .

@@ -1,0 +1,1 @@
+ALTER TABLE public.access_tokens ADD COLUMN shared_scopes jsonb DEFAULT '{"all": true}';

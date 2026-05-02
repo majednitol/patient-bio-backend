@@ -1,0 +1,1 @@
+ALTER TABLE pathologist_reports ADD COLUMN ai_analysis JSONB DEFAULT NULL;

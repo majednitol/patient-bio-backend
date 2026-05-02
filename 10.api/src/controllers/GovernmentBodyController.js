@@ -1,4 +1,4 @@
-import { revokeAccess, setGovermentBody, grantAccess, getGovermentBody } from "../services/adminService.js";
+import { revokeAccess, setGovermentBody, grantAccess, getGovermentBody } from "../services/govenmentBodyService.js";
 
 const chaincodeName = "basic";
 const channelName = "mychannel"

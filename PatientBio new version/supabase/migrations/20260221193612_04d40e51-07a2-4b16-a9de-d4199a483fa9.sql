@@ -1,0 +1,2 @@
+ALTER TABLE public.compliance_reports DROP CONSTRAINT compliance_reports_report_type_check;
+ALTER TABLE public.compliance_reports ADD CONSTRAINT compliance_reports_report_type_check CHECK (report_type = ANY (ARRAY['hipaa_audit'::text, 'gdpr_dsar'::text, 'access_report'::text, 'consent_report'::text, 'security_incident'::text, 'cross_border'::text]));
