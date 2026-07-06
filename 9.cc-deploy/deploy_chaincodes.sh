@@ -9,7 +9,7 @@ else
 fi
 ORG_NAMES=( "${ORG_NAMES[@]:1}" )
 for ORG in "${ORG_NAMES[@]}"; do
-  CLI_POD=$(kubectl get pods -o name | grep "cli-peer0-afrinic" | head -n1)
+  CLI_POD=$(kubectl get pods -o name | grep "cli-peer0-patient" | head -n1)
 
   if [ -z "$CLI_POD" ]; then
     echo "❌ Could not find CLI pod for $ORG"

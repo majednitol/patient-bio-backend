@@ -62,14 +62,14 @@ done
 echo "✅ All orgs have approved the chaincode."
 
 # Check commit readiness
-echo "🧪 Checking commit readiness from afrinic CLI pod..."
-AFRINIC_POD=$(kubectl get pods -o name | grep "cli-peer0-afrinic" | head -n1)
-if [ -z "$AFRINIC_POD" ]; then
-  echo "❌ Afrinic CLI pod not found"
+echo "🧪 Checking commit readiness from patient CLI pod..."
+PATIENT_POD=$(kubectl get pods -o name | grep "cli-peer0-patient" | head -n1)
+if [ -z "$PATIENT_POD" ]; then
+  echo "❌ patient CLI pod not found"
   exit 1
 fi
 
-run_in_container "$AFRINIC_POD" "
+run_in_container "$PATIENT_POD" "
   peer lifecycle chaincode checkcommitreadiness \
     --channelID $CHANNEL_NAME \
     --name $CHAINCODE_NAME \
@@ -81,7 +81,7 @@ run_in_container "$AFRINIC_POD" "
     --cafile $ORDERER_CA_PATH
 "
 # Commit chaincode
-echo "📦 Committing chaincode from afrinic CLI pod..."
+echo "📦 Committing chaincode from patient CLI pod..."
 COMMIT_CMD="peer lifecycle chaincode commit \
   -o $ORDERER_ADDRESS \
   --channelID $CHANNEL_NAME \
@@ -99,17 +99,17 @@ for i in "${!ORG_NAMES[@]}"; do
   COMMIT_CMD+=" --tlsRootCertFiles /organizations/peerOrganizations/${ORG}.$MAIN_DOMAIN/peers/peer0.${ORG}.$MAIN_DOMAIN/tls/ca.crt"
 done
 
-run_in_container "$AFRINIC_POD" "$COMMIT_CMD"
+run_in_container "$PATIENT_POD" "$COMMIT_CMD"
 
 
 # Query committed chaincode
-echo "🔍 Querying committed chaincode from afrinic CLI pod..."
-run_in_container "$AFRINIC_POD" "
+echo "🔍 Querying committed chaincode from patient CLI pod..."
+run_in_container "$PATIENT_POD" "
   peer lifecycle chaincode querycommitted -C $CHANNEL_NAME
 "
 
 # Invoke InitLedger
-echo "🚀 Invoking InitLedger from afrinic CLI pod..."
+echo "🚀 Invoking InitLedger from patient CLI pod..."
 
 INVOKE_CMD="peer chaincode invoke \
   -o $ORDERER_ADDRESS \
@@ -128,6 +128,6 @@ for i in "${!ORG_NAMES[@]}"; do
   INVOKE_CMD+=" --tlsRootCertFiles /organizations/peerOrganizations/${ORG}.$MAIN_DOMAIN/peers/peer0.${ORG}.$MAIN_DOMAIN/tls/ca.crt"
 done
 
-run_in_container "$AFRINIC_POD" "$INVOKE_CMD"
+run_in_container "$PATIENT_POD" "$INVOKE_CMD"
 
 echo "🎉 Chaincode deployed and InitLedger invoked successfully!"
