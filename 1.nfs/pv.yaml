@@ -12,39 +12,4 @@ spec:
   nfs:
     path: /mnt/nfs_share/
     server: 144.202.26.76
-
-# local deployment
-
-
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: mypv
-# spec:
-#   capacity:
-#     storage: 20Gi
-#   accessModes:
-#     - ReadWriteMany   # NFS supports RWX
-#   storageClassName: standard
-#   nfs:
-#     server: 192.168.2.2           # Multipass VM IP
-#     path: /mnt/nfs_share           # Path exported by the NFS server
-#   persistentVolumeReclaimPolicy: Retain
-
-
-
-
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: mypv
-# spec:
-#   storageClassName: standard
-#   capacity:
-#     storage: 20Gi
-#   volumeMode: Filesystem
-#   accessModes:
-#     - ReadWriteOnce
-#   hostPath: 
-#     path: /mnt/data/ 
-#     type: DirectoryOrCreate
+    

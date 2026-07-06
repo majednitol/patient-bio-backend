@@ -63,7 +63,7 @@ spec:
                 mode: 0544
       containers:
         - name: peer
-          image: hyperledger/fabric-peer:2.4.9
+          image: hyperledger/fabric-peer:2.5.16
           command: ["sh", "-c", "peer node start"]
           env:
             - name: CORE_PEER_ADDRESSAUTODETECT
@@ -178,6 +178,9 @@ metadata:
   labels:
     app: ${PEER_NAME}
     metrics-service: "true"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9443"
 spec:
   type: ClusterIP
   selector:

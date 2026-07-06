@@ -38,15 +38,15 @@ spec:
         - name: ${CLI_NAME}
           stdin: true
           tty: true
-          image: hyperledger/fabric-tools:2.4.9
+          image: hyperledger/fabric-tools:2.5.16
           workingDir: /
           resources:
             limits:
-              memory: "300Mi"
-              cpu: "200m"
+              memory: "100Mi"
+              cpu: "50m"
             requests:
-              memory: "200Mi"
-              cpu: "90m"
+              memory: "30Mi"
+              cpu: "10m"
           env:
             - name: ORDERER_CA
               value: /organizations/ordererOrganizations/$MAIN_DOMAIN/orderers/orderer.$MAIN_DOMAIN/msp/tlscacerts/tlsca.$MAIN_DOMAIN-cert.pem
@@ -73,7 +73,7 @@ spec:
             - name: SYS_CHANNEL
               value: system-channel
             - name: CORE_CHAINCODE_BUILDER
-              value: hyperledger/fabric-ccenv:1.4.8
+              value: hyperledger/fabric-ccenv:2.5.16
             - name: FABRIC_LOGGING_SPEC
               value: DEBUG
           volumeMounts:

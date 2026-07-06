@@ -1,1 +1,0 @@
-ALTER TYPE jurisdiction_code ADD VALUE IF NOT EXISTS 'BD';

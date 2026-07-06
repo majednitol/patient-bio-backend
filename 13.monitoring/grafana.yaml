@@ -30,8 +30,11 @@ spec:
             value: /var/lib/grafana/provisioning/
         resources:
           limits:
-            memory: "128Mi"
+            memory: "512Mi"
             cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
         ports:
         - containerPort: 3000
         volumeMounts:

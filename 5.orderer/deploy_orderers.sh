@@ -66,6 +66,15 @@ spec:
               value: /organizations/ordererOrganizations/$MAIN_DOMAIN/orderers/$FQDN/tls/server.key
             - name: ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE
               value: /organizations/ordererOrganizations/$MAIN_DOMAIN/orderers/$FQDN/tls/server.crt
+            - name: ORDERER_OPERATIONS_LISTENADDRESS
+              value: "0.0.0.0:$METRICS_PORT"
+            - name: ORDERER_METRICS_PROVIDER
+              value: prometheus
+            - name: ORDERER_ADMIN_LISTENADDRESS
+              value: "0.0.0.0:9445"
+          ports:
+            - containerPort: $GRPC_PORT
+            - containerPort: $METRICS_PORT
           resources:
             limits:
               memory: "400Mi"
@@ -87,6 +96,9 @@ metadata:
   name: $NAME
   labels:
     run: $NAME
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "$METRICS_PORT"
 spec:
   selector:
     name: $NAME
