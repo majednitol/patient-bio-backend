@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 # 🏥 Patient Identity: Decentralized Healthcare Ecosystem
+=======
+
+i am nitol updated
+>>>>>>> b24bb959aa8d531f53dd197bb2ebca17128dc465
 
 [![Hyperledger Fabric](https://img.shields.io/badge/Blockchain-Hyperledger%20Fabric-blue.svg)](https://www.hyperledger.org/use/fabric)
 [![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-blue.svg)](https://kubernetes.io/)
